@@ -1,0 +1,22 @@
+import { DateTime } from 'luxon'
+import { BaseModel, column } from '@adonisjs/lucid/orm'
+
+export default class ChannelMessage extends BaseModel {
+  @column({ isPrimary: true })
+  declare id: number
+
+  @column()
+  declare channelId: number
+
+  @column()
+  declare senderId: number
+
+  @column()
+  declare content: string
+
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
