@@ -4,22 +4,24 @@ import { useEffect } from "react"
 import Image from "next/image"
 import Link, { LinkProps } from "next/link"
 import { useSocket } from "@/context/socket"
+import { useChannels } from "@/stores/channels"
 import { useUser } from "@/stores/user"
 import { useSuspenseQuery } from "@tanstack/react-query"
 
 import { getUser } from "@/lib/actions/client"
 import logger from "@/lib/logger"
 import { cn } from "@/lib/utils"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 import { Icons } from "../icons"
 
-const channels = ["channel-1", "channel-2", "channel-3", "channel-4"]
-
-/* 
-! Channels are not implemented yet 
-*/
-
 export function Sidebar() {
+  const { channels } = useChannels()
   return (
     <aside className="sticky bottom-0 left-0 top-0 h-dvh space-y-8 border-r border-border/40 bg-background px-2 py-4">
       <UserInfo />
@@ -41,10 +43,24 @@ export function Sidebar() {
         </h2>
         <ul>
           {channels.map((channel) => (
-            <li key={channel}>
-              <NavLinkItem href="#">
-                <Icons.hashtag size={14} /> {channel}
-              </NavLinkItem>
+            <li key={channel.slug}>
+              <TooltipProvider delayDuration={200}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    {/* //TODO: fix props from the asChild comp to be passed correctly */}
+                    <a
+                      className="flex items-center gap-2 rounded-md px-3 py-1 hover:bg-muted aria-[current=true]:text-primary"
+                      href={`/app/channel/${channel.slug}`}
+                    >
+                      <Icons.hashtag size={14} />
+                      <span className="block truncate">{channel.name}</span>
+                    </a>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{channel.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </li>
           ))}
         </ul>
@@ -55,6 +71,7 @@ export function Sidebar() {
 
 function UserInfo() {
   const { profile } = useUser()
+  const { setChannels } = useChannels()
   const { isConnected } = useSocket()
 
   const { data } = useSuspenseQuery({
@@ -67,6 +84,7 @@ function UserInfo() {
   useEffect(() => {
     logger.info(data)
     setUser(data.profile)
+    setChannels(data.channels)
     setAuthenticated(true)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

@@ -1,12 +1,17 @@
 import Image from "next/image"
-import { PrivateChatMessage } from "@/types"
+import { PrivateChatMessage, User } from "@/types"
 import dayjs from "dayjs"
 
-type ChatMessageProps = PrivateChatMessage
+type ChatMessageProps = {
+  id: number
+  content: string
+  createdAt: string
+  sender: User
+}
 
 export function ChatMessage(message: ChatMessageProps) {
   return (
-    <div className="p-3 hover:bg-secondary/60">
+    <div className="px-3 py-1.5 hover:bg-secondary/60">
       <div className="flex gap-3">
         <Image
           className="size-12 rounded-full object-contain object-center"

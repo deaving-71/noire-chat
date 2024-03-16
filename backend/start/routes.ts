@@ -37,19 +37,20 @@ router
         router.get('/private-chats/:id', [PrivateChatsController, 'show'])
         router.post('/private-chats', [PrivateChatsController, 'store'])
 
+        router.get('/channels/:slug', [ChannelsController, 'show'])
         router.post('/channels', [ChannelsController, 'store'])
 
-        router.put('/membership/:invite_link', [MembershipsController, 'update'])
+        router.put('/membership/:slug', [MembershipsController, 'update'])
 
         router.delete('/logout', [LoginController, 'destroy'])
       })
       .use(middleware.auth())
+
     /*
     |--------------------------------------------------------------------------
     | Unprotected routes
     |--------------------------------------------------------------------------
     */
-
     router
       .group(() => {
         router.post('register', [RegisterController, 'store'])

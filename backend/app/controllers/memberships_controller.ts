@@ -10,9 +10,9 @@ export default class MembershipsController {
     if (!user) throw new Error('User not found')
 
     const { params } = await request.validateUsing(updateMembershipValidator)
-    const { invite_link } = params
+    const { slug } = params
 
-    const channel = await Channel.query().where({ invite_link }).first()
+    const channel = await Channel.query().where({ slug }).first()
 
     if (!channel) throw new Error('Channel not found')
 
@@ -22,8 +22,8 @@ export default class MembershipsController {
 
     await user.related('channels').attach([channel.id])
 
-    // todo: send a notification
-    // io.emit("")
+    io.emit('channel:join-channel', user, channel.id)
+
     return channel
   }
 }

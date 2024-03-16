@@ -6,6 +6,11 @@ import {
   privateChatValidator,
   UserValidator,
 } from "@/lib/validators/"
+import {
+  channelMembersValidator,
+  channelMessageValidator,
+  channelValidator,
+} from "@/lib/validators/channel"
 
 export type User = z.infer<typeof UserValidator>
 
@@ -19,12 +24,14 @@ export type IncomingFriendRequest = FriendRequest & { sender: User }
 export type OutgoingFriendRequest = FriendRequest & { receiver: User }
 
 export type PrivateChat = z.infer<typeof privateChatValidator>
-
 export type PrivateChatMessage = z.infer<typeof privateChatMessageValidator>
-
 export type PrivateChatHistory = Omit<PrivateChat, "messages"> & {
   last_message: PrivateChatMessage
 }
+
+export type Channel = z.infer<typeof channelValidator>
+export type ChannelMessage = z.infer<typeof channelMessageValidator>
+export type ChannelMembers = z.infer<typeof channelMembersValidator>
 
 export type CallbackPayload =
   | {

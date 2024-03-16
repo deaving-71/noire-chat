@@ -8,3 +8,18 @@ export const channelCreationValidator = vine.compile(
     }),
   })
 )
+
+export const channelShowValidator = vine.compile(
+  vine.object({
+    params: vine.object({
+      slug: vine.string().minLength(8),
+    }),
+  })
+)
+
+export const channelMessageValidator = vine.compile(
+  vine.object({
+    slug: vine.string().minLength(8),
+    content: vine.string(),
+  })
+)

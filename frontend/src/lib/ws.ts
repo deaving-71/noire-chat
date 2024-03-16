@@ -42,4 +42,8 @@ export class Ws {
   ) {
     this.socket.emit("private-chat:send-message", data, cb)
   }
+
+  sendChannelMessage(data: { slug: string; content: string }) {
+    this.socket.emit("channel:send-message", data)
+  }
 }
