@@ -1,12 +1,13 @@
 "use client"
 
 import Image from "next/image"
-import { useSocket } from "@/context/socket"
-import { useFriends } from "@/stores/friends"
+import { useFriendsContext } from "@/context/friends_context"
 import { User } from "@/types"
+import { useMutation } from "@tanstack/react-query"
 
-import logger from "@/lib/logger"
+import { acceptFriendRequest, removeFriendRequest } from "@/lib/actions/client"
 
+import { LoadingSpinner } from "../common"
 import { Icons } from "../icons"
 import { Button } from "../ui/button"
 
@@ -17,8 +18,22 @@ type ContactUserProps = {
 }
 
 export function FriendRequest({ type, user, requestId }: ContactUserProps) {
-  const { ws } = useSocket()
-  const { appendFriend, removeRequest } = useFriends()
+  const { removeRequest, appendFriend } = useFriendsContext()
+
+  const { mutate: accept, isPending: isAcceptancePending } = useMutation({
+    mutationKey: ["friend_request", "accept"],
+    mutationFn: acceptFriendRequest,
+    onSuccess: (user) => {
+      appendFriend(user)
+      removeRequest(requestId)
+    },
+  })
+
+  const { mutate: remove, isPending: isRemovalPending } = useMutation({
+    mutationKey: ["friend_request", "destroy"],
+    mutationFn: removeFriendRequest,
+    onSuccess: () => removeRequest(requestId),
+  })
 
   return (
     <div className="group p-3 hover:bg-secondary/40">
@@ -45,50 +60,30 @@ export function FriendRequest({ type, user, requestId }: ContactUserProps) {
         </div>
 
         {/* ACTIONS */}
-        <div className="hidden items-center gap-1 group-hover:flex">
+        <div className="flex items-center gap-1">
           {type === "incoming" && (
             <Button
               className="size-9 rounded-full"
               variant="secondary"
               size="icon"
-              onClick={() =>
-                ws?.acceptFriendRequest(user.id, (payload) => {
-                  if (payload.success) {
-                    logger.info(payload.data)
-                    const { user } = payload.data
-                    removeRequest(requestId)
-                    appendFriend(user)
-                    logger.info("################################")
-                  } else {
-                    logger.error(payload.message)
-                    logger.error(payload.errors)
-                    logger.info("################################")
-                  }
-                })
-              }
+              onClick={() => accept(user.id)}
+              disabled={isAcceptancePending && isRemovalPending}
             >
-              <Icons.checkmark size={18} />
+              {isAcceptancePending ? (
+                <LoadingSpinner />
+              ) : (
+                <Icons.checkmark size={18} />
+              )}
             </Button>
           )}
           <Button
             className="size-9 rounded-full"
             variant="secondary"
             size="icon"
-            onClick={() =>
-              ws?.removeFriendRequest(user.id, (payload) => {
-                if (payload.success) {
-                  removeRequest(requestId)
-                  logger.info(payload.data)
-                  logger.info("################################")
-                } else {
-                  logger.error(payload.message)
-                  logger.error(payload.errors)
-                  logger.info("################################")
-                }
-              })
-            }
+            onClick={() => remove(user.id)}
+            disabled={isAcceptancePending && isRemovalPending}
           >
-            <Icons.xmark />
+            {isRemovalPending ? <LoadingSpinner /> : <Icons.xmark />}
           </Button>
         </div>
       </div>

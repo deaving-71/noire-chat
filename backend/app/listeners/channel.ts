@@ -50,9 +50,8 @@ export default function channelHandlers(io: Server, socket: Socket) {
         return
       }
 
-      logger.info(channel)
-
       const _message = await channel.related('messages').create({ content, senderId })
+      logger.info(_message.$isPersisted)
       const _sender = await _message.related('sender').query().first()
       const message = _message.serialize()
       const sender = _sender?.serialize()

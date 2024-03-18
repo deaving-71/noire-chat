@@ -1,12 +1,17 @@
 "use client"
 
+import { useFriendsContext } from "@/context/friends_context"
 import { useSocket } from "@/context/socket"
-import { useFriends } from "@/stores/friends"
+import { useStore } from "@/stores"
+import { useFriends } from "@/stores/_friends"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
+import { sendFriendRequest } from "@/lib/actions/client"
 import logger from "@/lib/logger"
+import { responseErrorValdiator } from "@/lib/validators/error"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -16,7 +21,8 @@ const formSchema = z.object({
 })
 
 export function AddFriendForm() {
-  const { appendOutgoingRequest } = useFriends()
+  const { appendOutgoingRequest } = useFriendsContext()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -24,19 +30,19 @@ export function AddFriendForm() {
     },
   })
 
-  const { ws } = useSocket()
+  const { mutate } = useMutation({
+    mutationKey: ["friend_request", "send"],
+    mutationFn: sendFriendRequest,
+    onSuccess: appendOutgoingRequest,
+    onError: (_error) => {
+      const error = responseErrorValdiator.parse(_error)
+      logger.error(error)
+      form.setError("root", { message: error.message })
+    },
+  })
 
-  async function onSubmit({ username }: z.infer<typeof formSchema>) {
-    ws?.sendFriendRequest(username, (res) => {
-      if (res.success) {
-        logger.info(res.data)
-        appendOutgoingRequest(res.data)
-      } else {
-        logger.error(res.errors)
-        logger.error(res.message)
-        form.setError("root", { message: res.message })
-      }
-    })
+  function onSubmit({ username }: z.infer<typeof formSchema>) {
+    mutate(username)
   }
 
   return (

@@ -1,4 +1,10 @@
-export const fetcher = (url: string, opts?: RequestInit) => {
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL
+
+type FetcherOptions = Omit<RequestInit, "body"> & {
+  body?: Object | any[]
+}
+
+export const fetcher = (url: string, opts?: FetcherOptions) => {
   const defaultHeaders = {
     Accept: "application/json",
     "Content-Type": "application/json",
@@ -20,11 +26,10 @@ export const fetcher = (url: string, opts?: RequestInit) => {
 
 /**
  *
- * @param url must start with a slash
+ * @param url must start with a forward slash
  * @returns returns an absolute path to the api endpoint
  */
 export function api(url: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL
-  const route = `${baseUrl}${url}`
+  const route = `${BASE_URL}${url}`
   return route
 }

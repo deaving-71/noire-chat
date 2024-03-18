@@ -22,10 +22,11 @@ export default class ChannelsController {
     const { params } = await request.validateUsing(channelShowValidator)
     const { slug } = params
 
+    // TODO: implement pagination
     const _channel = await Channel.query()
       .where('slug', slug)
       .preload('messages', (messagesQuery) => {
-        messagesQuery.limit(20).preload('sender')
+        messagesQuery.preload('sender')
       })
       .preload('owner')
       .preload('members')

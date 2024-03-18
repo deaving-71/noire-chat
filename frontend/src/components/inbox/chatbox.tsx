@@ -9,12 +9,9 @@ import ScrollToBottom from "react-scroll-to-bottom"
 
 import { getPrivateChat } from "@/lib/actions/client"
 import logger from "@/lib/logger"
+import { ChatInput, ChatMessage, Header, Section } from "@/components/chat_app/"
 
 import { Icons } from "../icons"
-import { ChatInput } from "./chat_input"
-import { ChatMessage } from "./chat_message"
-import { Header } from "./header"
-import { Section } from "./section"
 
 type ChatBoxProps = { id: string }
 

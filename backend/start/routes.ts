@@ -14,6 +14,7 @@ const LoginController = () => import('#controllers/auth/login_controller')
 const RegisterController = () => import('#controllers/auth/register_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 const FriendsController = () => import('#controllers/friends_controller')
+const FriendRequestController = () => import('#controllers/friend_requests_controller')
 const PrivateChatsController = () => import('#controllers/private_chats_controller')
 const ChannelsController = () => import('#controllers/channels_controller')
 const MembershipsController = () => import('#controllers/memberships_controller')
@@ -31,7 +32,12 @@ router
           return 'Protected route hit'
         })
         router.get('/profile', [ProfileController, 'show'])
-        router.get('/friends-list', [FriendsController, 'index'])
+
+        router.get('/friends', [FriendsController, 'index'])
+        router.post('/friends', [FriendsController, 'store'])
+
+        router.post('/friend-requests', [FriendRequestController, 'store'])
+        router.delete('/friend-requests/:userId', [FriendRequestController, 'destroy'])
 
         router.get('/private-chats', [PrivateChatsController, 'index'])
         router.get('/private-chats/:id', [PrivateChatsController, 'show'])

@@ -108,7 +108,6 @@ async function onDisconnection(socket: Socket) {
 function onConnection(socket: Socket) {
   logger.info(`socket connected: ${socket.id}`)
 
-  friendRequestHandlers(io, socket)
   privateChatHandlers(io, socket)
   channelHandlers(io, socket)
 

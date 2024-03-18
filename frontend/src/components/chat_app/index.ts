@@ -1,6 +1,5 @@
 export * from "./sidebar"
 export * from "./header"
-export * from "./chatbox"
 export * from "./chat_message"
 export * from "./chat_input"
 export * from "./section"

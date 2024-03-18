@@ -15,7 +15,8 @@ export function InboxContact({ chat }: InboxContactProps) {
   const { profile } = useUser()
   const { last_message } = chat
 
-  const senderIsCurrentUser = last_message.senderId === profile?.id
+  const senderIsCurrentUser = chat.sender.id === profile?.id
+  const receiver = senderIsCurrentUser ? chat.receiver : chat.sender
 
   return (
     <Link
@@ -27,18 +28,18 @@ export function InboxContact({ chat }: InboxContactProps) {
           <div className="relative rounded-full bg-secondary">
             <Image
               className="size-12 rounded-full object-contain object-center"
-              src={`/assets/${last_message.sender.avatar}`}
+              src={`/assets/${receiver.avatar}`}
               alt={"User Avatar"}
               width={48}
               height={48}
             />
-            <StatusDot status={last_message.sender.isOnline} />
+            <StatusDot status={receiver.isOnline} />
           </div>
         </div>
 
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <span className="font-bold">{last_message.sender.username}</span>{" "}
+            <span className="font-bold">{receiver.username}</span>{" "}
             <span className="font-medium text-muted-foreground">
               {since(last_message.createdAt)}
             </span>

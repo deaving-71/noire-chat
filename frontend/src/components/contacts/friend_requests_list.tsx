@@ -1,13 +1,13 @@
 "use client"
 
-import { useFriends } from "@/stores/friends"
+import { useFriendsContext } from "@/context/friends_context"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { FriendRequest } from "./friend_request"
 
 export function FriendRequestsList() {
-  const { friend_requests } = useFriends()
+  const { friendRequests } = useFriendsContext()
 
   return (
     <Tabs defaultValue="all" className="h-[calc(100dvh-64px)] overflow-auto">
@@ -18,7 +18,7 @@ export function FriendRequestsList() {
       </TabsList>
       <TabsContent value="all">
         <ul>
-          {friend_requests.outgoing.map((request) => (
+          {friendRequests.outgoing.map((request) => (
             <li key={request.id + "all-outgoing"}>
               <FriendRequest
                 requestId={request.id}
@@ -27,7 +27,7 @@ export function FriendRequestsList() {
               />
             </li>
           ))}
-          {friend_requests.incoming.map((request) => (
+          {friendRequests.incoming.map((request) => (
             <li key={request.id + "all-incoming"}>
               <FriendRequest
                 requestId={request.id}
@@ -39,7 +39,7 @@ export function FriendRequestsList() {
         </ul>
       </TabsContent>
       <TabsContent value="incoming">
-        {friend_requests.incoming.map((request) => (
+        {friendRequests.incoming.map((request) => (
           <li key={request.id + "incoming"}>
             <FriendRequest
               requestId={request.id}
@@ -50,7 +50,7 @@ export function FriendRequestsList() {
         ))}
       </TabsContent>
       <TabsContent value="outgoing">
-        {friend_requests.outgoing.map((request) => (
+        {friendRequests.outgoing.map((request) => (
           <li key={request.id + "outgoing"}>
             <FriendRequest
               requestId={request.id}

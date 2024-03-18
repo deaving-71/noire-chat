@@ -1,7 +1,7 @@
 import { fetcher } from "@/lib/fetcher"
 
 export async function getFriendsList() {
-  const response = await fetcher("/friends-list")
+  const response = await fetcher("/friends")
 
   const result = await response.json()
 

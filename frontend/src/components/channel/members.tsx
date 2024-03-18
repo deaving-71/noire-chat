@@ -1,13 +1,16 @@
 "use client"
 
-import { useChannel } from "@/stores/channels"
-import { User } from "@/types"
+import { ChannelMembers, User } from "@/types"
 
 import { Header, Section } from "../chat_app"
 import { UserCard } from "../common"
 
-export function Members() {
-  const { members, channel } = useChannel()
+type MembersProps = {
+  members: ChannelMembers
+  owner: User
+}
+
+export function Members({ members, owner }: MembersProps) {
   return (
     <Section className="sticky right-0 top-0 grid h-dvh">
       <div className="overflow-auto">
@@ -15,7 +18,7 @@ export function Members() {
           <h2 className="text-lg font-bold lg:text-xl">Members</h2>
         </Header>
         <div className="p-1">
-          <Member {...channel?.owner} isOwner={true} />
+          <Member {...owner} isOwner={true} />
           {members.online.map((member) => (
             <Member key={member.id + "on"} {...member} />
           ))}

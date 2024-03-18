@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 
-import { ChatBox } from "@/components/chat_app"
+import { ChatBox } from "@/components/inbox/"
 
 export default function ChatPage({ params }: { params: { id: string } }) {
   return (

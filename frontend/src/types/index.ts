@@ -1,4 +1,3 @@
-import { timeStamp } from "console"
 import { z } from "zod"
 
 import {
@@ -11,17 +10,25 @@ import {
   channelMessageValidator,
   channelValidator,
 } from "@/lib/validators/channel"
+import {
+  IncomingFriendRequest,
+  OutgoingFriendRequest,
+} from "@/lib/validators/friend_request"
 
 export type User = z.infer<typeof UserValidator>
 
-export type FriendRequest = {
-  id: number
-  senderId: number
-  receiverId: number
-} & Timestamp
+export type FriendsList = {
+  online: User[]
+  offline: User[]
+}
 
-export type IncomingFriendRequest = FriendRequest & { sender: User }
-export type OutgoingFriendRequest = FriendRequest & { receiver: User }
+export type IncomingFriendRequest = z.infer<typeof IncomingFriendRequest>
+export type OutgoingFriendRequest = z.infer<typeof OutgoingFriendRequest>
+
+export type FriendRequests = {
+  outgoing: OutgoingFriendRequest[]
+  incoming: IncomingFriendRequest[]
+}
 
 export type PrivateChat = z.infer<typeof privateChatValidator>
 export type PrivateChatMessage = z.infer<typeof privateChatMessageValidator>

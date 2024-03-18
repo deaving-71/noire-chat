@@ -1,33 +1,43 @@
-import { IncomingFriendRequest, OutgoingFriendRequest, User } from "@/types"
+import {
+  Channel,
+  FriendRequests,
+  FriendsList,
+  IncomingFriendRequest,
+  OutgoingFriendRequest,
+  User,
+} from "@/types"
 import { create } from "zustand"
 
-type UseFriends = {
+import { createSelectors } from "./create_selectors"
+
+type InitialState = {
+  user: User | null
+  auth: {}
   friends: FriendsList
   friend_requests: FriendRequests
+  channels: Channel[]
+}
+
+type Actions = {
+  setUser: (user: User) => void
+  setAuthenticated: (state: boolean) => void
 
   setFriends(friends: FriendsList): void
   setFriendRequests(friend_requests: FriendRequests): void
-
   appendFriend(newFriend: User): void
   appendIncomingRequest(request: IncomingFriendRequest): void
   appendOutgoingRequest(request: OutgoingFriendRequest): void
-
   removeRequest(requestId: number): void
+  resetFriendsListAndRequests(): void
 
-  reset(): void
+  setChannels(channels: Channel[]): void
 }
 
-type FriendsList = {
-  online: User[]
-  offline: User[]
-}
+type UseStore = InitialState & Actions
 
-type FriendRequests = {
-  outgoing: OutgoingFriendRequest[]
-  incoming: IncomingFriendRequest[]
-}
-
-export const useFriends = create<UseFriends>((set, get) => ({
+const initialState: InitialState = {
+  user: null,
+  auth: {},
   friends: {
     online: [],
     offline: [],
@@ -35,6 +45,19 @@ export const useFriends = create<UseFriends>((set, get) => ({
   friend_requests: {
     outgoing: [],
     incoming: [],
+  },
+  channels: [],
+}
+
+export const useStoreBase = create<UseStore>((set) => ({
+  ...initialState,
+
+  setUser(user) {
+    set({ user })
+  },
+
+  setAuthenticated(state) {
+    set({ auth: state })
   },
 
   setFriends(friends: FriendsList) {
@@ -45,16 +68,21 @@ export const useFriends = create<UseFriends>((set, get) => ({
     set({ friend_requests })
   },
 
+  setChannels(channels) {
+    set({ channels })
+  },
+
   appendFriend(newFriend) {
-    const { friends } = get()
-    const newFriendsList = { ...friends }
+    set((state) => {
+      const friends = { ...state.friends }
 
-    const isOnline = newFriend.isOnline
-    isOnline
-      ? newFriendsList.online.push(newFriend)
-      : newFriendsList.offline.push(newFriend)
+      const isOnline = newFriend.isOnline
+      isOnline
+        ? friends.online.push(newFriend)
+        : friends.offline.push(newFriend)
 
-    set({ friends: newFriendsList })
+      return { friends: friends }
+    })
   },
 
   appendIncomingRequest(request) {
@@ -97,7 +125,7 @@ export const useFriends = create<UseFriends>((set, get) => ({
     })
   },
 
-  reset() {
+  resetFriendsListAndRequests() {
     set({
       friends: {
         online: [],
@@ -110,3 +138,5 @@ export const useFriends = create<UseFriends>((set, get) => ({
     })
   },
 }))
+
+export const useStore = createSelectors(useStoreBase)

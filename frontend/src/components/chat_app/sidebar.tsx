@@ -1,15 +1,11 @@
 "use client"
 
-import { useEffect } from "react"
 import Image from "next/image"
 import Link, { LinkProps } from "next/link"
 import { useSocket } from "@/context/socket"
-import { useChannels } from "@/stores/channels"
-import { useUser } from "@/stores/user"
 import { useSuspenseQuery } from "@tanstack/react-query"
 
 import { getUser } from "@/lib/actions/client"
-import logger from "@/lib/logger"
 import { cn } from "@/lib/utils"
 import {
   Tooltip,
@@ -21,7 +17,12 @@ import {
 import { Icons } from "../icons"
 
 export function Sidebar() {
-  const { channels } = useChannels()
+  const { data } = useSuspenseQuery({
+    queryKey: ["user"],
+    queryFn: getUser,
+  })
+  const { channels } = data
+
   return (
     <aside className="sticky bottom-0 left-0 top-0 h-dvh space-y-8 border-r border-border/40 bg-background px-2 py-4">
       <UserInfo />
@@ -44,19 +45,19 @@ export function Sidebar() {
         <ul>
           {channels.map((channel) => (
             <li key={channel.slug}>
-              <TooltipProvider delayDuration={200}>
+              <TooltipProvider delayDuration={0}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     {/* //TODO: fix props from the asChild comp to be passed correctly */}
-                    <a
-                      className="flex items-center gap-2 rounded-md px-3 py-1 hover:bg-muted aria-[current=true]:text-primary"
+                    <Link
                       href={`/app/channel/${channel.slug}`}
+                      className="flex items-center gap-2 rounded-md px-3 py-1 hover:bg-muted aria-[current=true]:text-primary"
                     >
                       <Icons.hashtag size={14} />
                       <span className="block truncate">{channel.name}</span>
-                    </a>
+                    </Link>
                   </TooltipTrigger>
-                  <TooltipContent side="right">
+                  <TooltipContent side="right" className="z-20 bg-background">
                     <p>{channel.name}</p>
                   </TooltipContent>
                 </Tooltip>
@@ -70,42 +71,32 @@ export function Sidebar() {
 }
 
 function UserInfo() {
-  const { profile } = useUser()
-  const { setChannels } = useChannels()
   const { isConnected } = useSocket()
 
   const { data } = useSuspenseQuery({
-    queryKey: ["userProfile"],
+    queryKey: ["user"],
     queryFn: getUser,
   })
+  const { profile } = data
 
-  const { setUser, setAuthenticated } = useUser()
-
-  useEffect(() => {
-    logger.info(data)
-    setUser(data.profile)
-    setChannels(data.channels)
-    setAuthenticated(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
+  console.log("data: ", data)
   return (
     <div className="flex gap-3">
       <Image
         className="size-12 rounded-full border-2 border-blue-600 object-contain object-center p-0.5 shadow-[0_0_15px_-6px_rgb(37,99,235)]"
-        src={`/assets/${profile?.avatar}`}
+        src={`/assets/${profile.avatar}`}
         alt={"User Avatar"}
         width={40}
         height={40}
       />
       <div className="space-y-2">
-        <div className="font-medium">{profile?.username ?? "<NAME>"}</div>
+        <div className="font-medium">{profile.username}</div>
         <div
           className={cn(
-            "inline-flex rounded-3xl px-2 py-0.5 leading-[1] shadow-[0_0_15px_-5px_#22c55e] ring-1",
+            "inline-flex rounded-3xl px-2 py-0.5 leading-[1]  ring-1",
             isConnected
-              ? "text-green-400 ring-green-400"
-              : "text-gray-400 ring-gray-400"
+              ? "text-green-400 shadow-[0_0_15px_-5px_#22c55e] ring-green-400"
+              : "text-gray-400 shadow-[0_0_15px_-5px_#9ca3af] ring-gray-400"
           )}
         >
           {isConnected ? "online" : "offline"}

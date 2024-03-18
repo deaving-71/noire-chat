@@ -1,8 +1,19 @@
 import vine from '@vinejs/vine'
 
-/**
- * userId is either a sender or a receiver
- */
-export const friendRequestValidator = vine.compile(vine.number())
+export const storeFriendValdiator = vine.compile(
+  vine.object({
+    senderId: vine.number(),
+  })
+)
 
-export const sendFriendRequestValidator = vine.compile(vine.string())
+export const storeFriendRequestValidator = vine.compile(
+  vine.object({ receiverUsername: vine.string() })
+)
+
+export const destroyFriendRequestValidator = vine.compile(
+  vine.object({
+    params: vine.object({
+      userId: vine.number(),
+    }),
+  })
+)

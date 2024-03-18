@@ -3,6 +3,7 @@ import {
   Command,
   Hash,
   Inbox,
+  Loader2,
   MessageSquare,
   Moon,
   Send,
@@ -29,6 +30,7 @@ const icons = {
   tripleDot: TripleDot,
   xmark: X,
   checkmark: Check,
+  load: Loader2,
 }
 
 function TripleDot() {

@@ -13,7 +13,7 @@ import { Icons } from "../icons"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 
-type ChatInputProps = { sendMessage(content: string): void }
+export type ChatInputProps = { sendMessage: (content: string) => void }
 
 const formSchema = z.object({
   content: z.string().min(1),

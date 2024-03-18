@@ -1,49 +1,30 @@
 "use client"
 
-import { useEffect } from "react"
-import { useFriends } from "@/stores/friends"
-import { useSuspenseQuery } from "@tanstack/react-query"
-
-import { getFriendsList } from "@/lib/actions/client"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+import { useFriendsContext } from "../../context/friends_context"
 import { ContactUser } from "./contact_user"
+import { Count } from "./count"
 
 export function ContactList() {
-  const { data } = useSuspenseQuery({
-    queryKey: ["friends"],
-    queryFn: getFriendsList,
-  })
-
-  const { setFriends, setFriendRequests } = useFriends()
-  const { friends, friend_requests } = data
+  const { friends } = useFriendsContext()
 
   const onlineFriendsCount = friends.online.length
   const offlineFriendsCount = friends.offline.length
   const allFriendsCount = onlineFriendsCount + offlineFriendsCount
 
-  useEffect(() => {
-    setFriends(friends)
-    setFriendRequests(friend_requests)
-  }, [])
-
   return (
     <Tabs defaultValue="all">
       <TabsList className="m-4">
         <TabsTrigger value="all">
-          All {"("}
-          {allFriendsCount}
-          {")"}
+          All <Count count={allFriendsCount} />
         </TabsTrigger>
         <TabsTrigger value="online">
-          Online {"("}
-          {onlineFriendsCount}
-          {")"}
+          Online <Count count={onlineFriendsCount} />
         </TabsTrigger>
         <TabsTrigger value="offline">
-          Offline {"("}
-          {offlineFriendsCount}
-          {")"}
+          Offline
+          <Count count={offlineFriendsCount} />
         </TabsTrigger>
       </TabsList>
       <TabsContent value="all">
