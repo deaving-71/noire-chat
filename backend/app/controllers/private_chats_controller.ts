@@ -16,6 +16,8 @@ export default class PrivateChatsController {
       ?.related('sentPrivateChats')
       .query()
       .has('messages')
+      .preload('receiver')
+      .preload('sender')
       .preload('messages', (messagesQuery) => {
         messagesQuery.orderBy('id', 'desc').preload('sender').first()
       })
@@ -24,6 +26,8 @@ export default class PrivateChatsController {
       ?.related('receivedPrivateChats')
       .query()
       .has('messages')
+      .preload('receiver')
+      .preload('sender')
       .preload('messages', (messagesQuery) => {
         messagesQuery.orderBy('id', 'desc').preload('sender').first()
       })

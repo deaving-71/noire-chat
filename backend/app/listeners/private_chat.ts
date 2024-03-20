@@ -1,12 +1,12 @@
 import Friend from '#models/friend'
 import PrivateChat from '#models/private_chat'
 import { Callback } from '#types/listeners'
-import Notifcation from '#listeners/notifications'
 import { privateChatMessageValidator } from '#validators/private_chat'
 import { errors } from '@vinejs/vine'
 import { Infer } from '@vinejs/vine/types'
 import { Server, Socket } from 'socket.io'
 import logger from '@adonisjs/core/services/logger'
+import redis from '@adonisjs/redis/services/main'
 
 export default function privateChatHandlers(io: Server, socket: Socket) {
   socket.on('private-chat:send-message', sendMessage)
@@ -27,12 +27,11 @@ export default function privateChatHandlers(io: Server, socket: Socket) {
 
       const message = await PrivateChat.sendMessage({ content, receiverId, senderId })
 
-      const notify = new Notifcation(io, receiverId)
-      const sockets = await notify.getUserSockets()
+      const receiverSockets = await redis.lrange(String(receiverId), 0, -1)
+      const senderSockets = await redis.lrange(String(senderId), 0, -1)
+      const sockets = [...receiverSockets, ...senderSockets]
 
-      // notify.privateChatMessage(message.privateChatId)
       io.to(sockets).emit('private-chat:message-received', message)
-      cb && cb({ success: true, data: message })
     } catch (error) {
       logger.error(error)
       if (error instanceof errors.E_VALIDATION_ERROR) {

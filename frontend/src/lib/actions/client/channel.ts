@@ -22,3 +22,26 @@ export async function getChannel(slug: string) {
 
   return channelQueryDataSchema.parse(result)
 }
+
+export async function joinChannel(slug: string) {
+  const response = await fetcher(`/memberships/${slug}`)
+
+  const result = await response.json()
+
+  if (!response.ok) throw JSON.stringify(result)
+
+  return result
+}
+
+export async function createChannel(name: string) {
+  const response = await fetcher(`/channels`, {
+    method: "POST",
+    body: { name },
+  })
+
+  const result = await response.json()
+
+  if (!response.ok) throw JSON.stringify(result)
+
+  return result
+}

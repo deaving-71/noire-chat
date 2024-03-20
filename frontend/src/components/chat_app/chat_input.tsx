@@ -1,7 +1,7 @@
 "use client"
 
+import { useUser } from "@/_stores/user"
 import { useSocket } from "@/context/socket"
-import { useUser } from "@/stores/user"
 import { PrivateChatMessage } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"

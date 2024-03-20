@@ -1,4 +1,4 @@
-import { useUser } from "@/stores/user"
+import { useUser } from "@/_stores/user"
 import { Callback } from "@/types"
 import { io } from "socket.io-client"
 
@@ -21,26 +21,8 @@ export class Ws {
     })
   }
 
-  sendFriendRequest(username: string, cb: Callback) {
-    this.socket.emit("friend-request:send", username, cb)
-  }
-
-  acceptFriendRequest(senderId: number, cb: Callback) {
-    this.socket.emit("friend-request:accept", senderId, cb)
-  }
-
-  removeFriendRequest(userId: number, cb: Callback) {
-    this.socket.emit("friend-request:remove", userId, cb)
-  }
-
-  sendPrivateMessage(
-    data: {
-      receiverId: number
-      content: string
-    },
-    cb: Callback
-  ) {
-    this.socket.emit("private-chat:send-message", data, cb)
+  sendPrivateMessage(data: { receiverId: number; content: string }) {
+    this.socket.emit("private-chat:send-message", data)
   }
 
   sendChannelMessage(data: { slug: string; content: string }) {

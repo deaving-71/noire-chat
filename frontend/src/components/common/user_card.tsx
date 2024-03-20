@@ -5,15 +5,19 @@ import { cn } from "@/lib/utils"
 import { StatusDot } from "../chat_app"
 import { Badge } from "../ui/badge"
 
-type UserCardProps = React.PropsWithChildren & {
+type UserCardProps = React.ComponentPropsWithoutRef<"button"> & {
   isOwner?: boolean
 }
 
-function Root({ children, isOwner }: UserCardProps) {
+function Root({ className, children, isOwner, ...props }: UserCardProps) {
   return (
     <button
+      {...props}
       type="button"
-      className="flex w-full items-center justify-between rounded-sm p-1 hover:bg-secondary/40"
+      className={cn(
+        "flex w-full items-center justify-between rounded-sm p-1 hover:bg-secondary/40",
+        className
+      )}
     >
       <div className="flex items-center gap-3">{children}</div>
       {isOwner && (

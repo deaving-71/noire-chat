@@ -40,7 +40,7 @@ export default class FriendsController {
 
     io.to(sockets).emit('friend-request:accepted', {
       user: receiver.serialize(),
-      requestId: request.id,
+      requestId: freindRequest.id,
     })
 
     return sender

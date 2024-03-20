@@ -6,6 +6,7 @@ import {
   Loader2,
   MessageSquare,
   Moon,
+  Plus,
   Send,
   SunMedium,
   UsersRound,
@@ -31,6 +32,7 @@ const icons = {
   xmark: X,
   checkmark: Check,
   load: Loader2,
+  plus: Plus,
 }
 
 function TripleDot() {

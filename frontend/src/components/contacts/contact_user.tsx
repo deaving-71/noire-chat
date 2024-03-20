@@ -6,6 +6,7 @@ import { User } from "@/types"
 
 import { initiateChat } from "@/lib/actions/client"
 
+import { UserCard } from "../common"
 import { Icons } from "../icons"
 import { Button } from "../ui/button"
 
@@ -18,25 +19,14 @@ export function ContactUser(user: ContactUserProps) {
     <div className="group p-3 hover:bg-secondary/40">
       <div className="flex items-center justify-between">
         {/* CONTACT INFO */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center space-x-4">
-            <span className="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full">
-              <Image
-                className="aspect-square h-full w-full"
-                alt="Image"
-                src={`/assets/${user?.avatar}`}
-                width={48}
-                height={48}
-              />
-            </span>
-            <div>
-              <p className="text-sm font-medium leading-none">
-                {user.username}
-              </p>
-              <p className="text-sm text-muted-foreground">{user.email}</p>
-            </div>
-          </div>
-        </div>
+        <UserCard.Root className="hover:bg-transparent">
+          <UserCard.Avatar
+            src={`/assets/${user.avatar}`}
+            alt="User Avatar"
+            isOnline={user.isOnline}
+          ></UserCard.Avatar>
+          <UserCard.Info username={user.username} email={user.email} />
+        </UserCard.Root>
 
         {/* ACTIONS */}
         <div className="hidden items-center gap-1 group-hover:flex">

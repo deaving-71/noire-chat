@@ -46,7 +46,7 @@ router
         router.get('/channels/:slug', [ChannelsController, 'show'])
         router.post('/channels', [ChannelsController, 'store'])
 
-        router.put('/membership/:slug', [MembershipsController, 'update'])
+        router.put('/memberships/:slug', [MembershipsController, 'update'])
 
         router.delete('/logout', [LoginController, 'destroy'])
       })

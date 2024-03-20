@@ -30,7 +30,7 @@ export function ContactList() {
       <TabsContent value="all">
         <ul className="pb-4">
           {[...friends.online, ...friends.offline].map((friend) => (
-            <li key={friend.id}>
+            <li key={friend.id + "all"}>
               <ContactUser {...friend} />
             </li>
           ))}

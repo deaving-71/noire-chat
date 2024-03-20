@@ -2,13 +2,11 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useSocket } from "@/context/socket"
-import { useUser } from "@/stores/user"
 import { PrivateChatMessage } from "@/types"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import ScrollToBottom from "react-scroll-to-bottom"
 
-import { getPrivateChat } from "@/lib/actions/client"
-import logger from "@/lib/logger"
+import { getPrivateChat, getUser } from "@/lib/actions/client"
 import { ChatInput, ChatMessage, Header, Section } from "@/components/chat_app/"
 
 import { Icons } from "../icons"
@@ -20,15 +18,15 @@ export function ChatBox({ id }: ChatBoxProps) {
     queryKey: ["private_chat", id],
     queryFn: () => getPrivateChat(id),
   })
+  const { data: user } = useSuspenseQuery({
+    queryKey: ["user"],
+    queryFn: getUser,
+  })
+  const { ws } = useSocket()
 
   const [messages, setMessages] = useState<PrivateChatMessage[]>(chat.messages)
+  const isCurrentUserSender = user.profile?.id === chat.senderId
 
-  const { ws } = useSocket()
-  const { profile } = useUser()
-
-  const isCurrentUserSender = profile?.id === chat.senderId
-
-  console.log(chat)
   const receiverUsername = isCurrentUserSender
     ? chat.receiver.username
     : chat.sender.username
@@ -37,6 +35,7 @@ export function ChatBox({ id }: ChatBoxProps) {
     ws?.socket.on(
       "private-chat:message-received",
       (message: PrivateChatMessage) => {
+        if (message.privateChatId !== chat.id) return
         setMessages((prev) => [...prev, message])
       }
     )
@@ -52,20 +51,11 @@ export function ChatBox({ id }: ChatBoxProps) {
    * depending on whether they were the first one to send a message
    */
   const sendMessage = useCallback((content: string) => {
-    const isCurrentUserSender = profile?.id === chat?.senderId
-    const receiverId = isCurrentUserSender ? chat?.receiverId : chat?.senderId
+    const isCurrentUserSender = user.profile.id === chat.senderId
+    const receiverId = isCurrentUserSender ? chat.receiverId : chat.senderId
     if (!receiverId) return
 
-    ws?.sendPrivateMessage({ receiverId, content }, (payload) => {
-      if (payload.success) {
-        console.log(chat)
-        logger.info(payload.data)
-        setMessages((prev) => [...prev, payload.data])
-      } else {
-        logger.error(payload.message)
-        logger.error(payload?.errors)
-      }
-    })
+    ws?.sendPrivateMessage({ receiverId, content })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 

@@ -1,6 +1,5 @@
 "use client"
 
-import { request } from "http"
 import { createContext, useContext, useEffect, useState } from "react"
 import { useSocket } from "@/context/socket"
 import {
@@ -11,6 +10,7 @@ import {
   User,
 } from "@/types"
 import { useSuspenseQuery } from "@tanstack/react-query"
+import { produce } from "immer"
 
 import { getFriendsList } from "@/lib/actions/client"
 
@@ -44,33 +44,35 @@ export function FriendContextProvider({ children }: React.PropsWithChildren) {
   })
 
   const [friends, setFriends] = useState<FriendsList>(data.friends)
-
   const [friendRequests, setFriendRequests] = useState<FriendRequests>(
     data.friend_requests
   )
   const { ws } = useSocket()
 
   function appendFriend(newFriend: User) {
-    setFriends((state) => {
-      const status = newFriend.isOnline ? "online" : "offline"
-      const newFriendsList = { ...state }
-      newFriendsList[status].push(newFriend)
-      return newFriendsList
-    })
+    setFriends(
+      produce((state) => {
+        newFriend.isOnline
+          ? (state.online = [...state.online, newFriend])
+          : [...state.offline, newFriend]
+      })
+    )
   }
 
   function appendIncomingRequest(request: IncomingFriendRequest) {
-    setFriendRequests((state) => ({
-      outgoing: [...state.outgoing],
-      incoming: [...state.incoming, request],
-    }))
+    setFriendRequests(
+      produce((state) => {
+        state.incoming = [...state.incoming, request]
+      })
+    )
   }
 
   function appendOutgoingRequest(request: OutgoingFriendRequest) {
-    setFriendRequests((state) => ({
-      outgoing: [...state.outgoing, request],
-      incoming: [...state.incoming],
-    }))
+    setFriendRequests(
+      produce((state) => {
+        state.outgoing = [...state.outgoing, request]
+      })
+    )
   }
 
   function removeRequest(id: number) {
@@ -88,6 +90,28 @@ export function FriendContextProvider({ children }: React.PropsWithChildren) {
   }
 
   useEffect(() => {
+    ws?.socket.on("friend-connected", (user: User) => {
+      setFriends((friends) => {
+        const newFriends = { ...friends }
+        newFriends.offline = newFriends.offline.filter(
+          (friend) => friend.id !== user.id
+        )
+        newFriends.online = [...newFriends.online, user]
+        return newFriends
+      })
+    })
+
+    ws?.socket.on("friend-disconnected", (user: User) => {
+      setFriends((friends) => {
+        const newFriends = { ...friends }
+        newFriends.online = newFriends.online.filter(
+          (friend) => friend.id !== user.id
+        )
+        newFriends.offline = [...newFriends.offline, user]
+        return newFriends
+      })
+    })
+
     ws?.socket.on("friend-request:received", (data: IncomingFriendRequest) =>
       appendIncomingRequest(data)
     )
@@ -105,6 +129,8 @@ export function FriendContextProvider({ children }: React.PropsWithChildren) {
     })
 
     return () => {
+      ws?.socket.off("friend-connected")
+      ws?.socket.off("friend-disconnected")
       ws?.socket.off("friend-request:received")
       ws?.socket.off("friend-request:accepted")
       ws?.socket.off("friend-request:removed")

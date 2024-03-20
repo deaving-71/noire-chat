@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from "react"
-import { useFriends } from "@/stores/_friends"
+import { useFriends } from "@/_stores/_friends"
 import { IncomingFriendRequest, User } from "@/types"
 
 import logger from "@/lib/logger"

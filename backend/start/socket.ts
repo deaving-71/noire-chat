@@ -5,15 +5,28 @@ import redis from '@adonisjs/redis/services/main'
 import logger from '@adonisjs/core/services/logger'
 import * as json from 'node:querystring'
 import { userValidator } from '#validators/user'
-import friendRequestHandlers from '#listeners/friend_request'
 import privateChatHandlers from '#listeners/private_chat'
 import User from '#models/user'
 import channelHandlers from '#listeners/channel'
-import { SocketMiddlware } from '#types/ws'
+import { NextMiddleware } from '#types/ws'
 
 ws.boot()
 
 export const io = ws.io
+
+io.use(authenticate)
+io.use(updateUserStatusMiddleware)
+io.use(joinChannels)
+io.on('connection', onConnection)
+
+function onConnection(socket: Socket) {
+  logger.info(`socket connected: ${socket.id}`)
+
+  privateChatHandlers(io, socket)
+  channelHandlers(io, socket)
+
+  socket.on('disconnect', () => onDisconnection(socket))
+}
 
 /*
 |--------------------------------------------------------------------------
@@ -21,20 +34,22 @@ export const io = ws.io
 |--------------------------------------------------------------------------
 */
 
-const authenticate: SocketMiddlware = async (socket, next) => {
+async function authenticate(socket: Socket, next: NextMiddleware) {
   try {
-    await getSocketUser(socket)
-    next()
-    return
+    await registerUserSocket(socket)
+    return next()
   } catch (error) {
     logger.error(error)
     next(error)
   }
 }
 
-const updateUserStatusMiddleware: SocketMiddlware = async (socket, next) => {
+async function updateUserStatusMiddleware(socket: Socket, next: NextMiddleware) {
   try {
-    await updateUserStatus(socket.data.user.id, true)
+    const userId = socket.data.user.id
+
+    await updateUserStatus(userId, true)
+    broadcastUserStatus('friend-connected', socket)
     next()
   } catch (error) {
     logger.error(error)
@@ -42,7 +57,7 @@ const updateUserStatusMiddleware: SocketMiddlware = async (socket, next) => {
   }
 }
 
-const joinChannels: SocketMiddlware = async (socket, next) => {
+async function joinChannels(socket: Socket, next: NextMiddleware) {
   try {
     const userId = socket.data.user.id
     const user = await User.find(userId)
@@ -54,7 +69,7 @@ const joinChannels: SocketMiddlware = async (socket, next) => {
     const slugs = channels.map((c) => c.slug)
 
     socket.join(slugs)
-    io.to(slugs).emit('user-connected', user.id)
+    io.to(slugs).emit('member-connected', user.id)
 
     next()
   } catch (error) {
@@ -62,19 +77,20 @@ const joinChannels: SocketMiddlware = async (socket, next) => {
     next(error)
   }
 }
+/* -------------------------------------------------------------------------- */
 
-async function updateUserStatus(userId: number, isOnline: boolean) {
+async function updateUserStatus(userId: number, status: boolean) {
   const user = await User.find(userId)
 
   if (!user) {
     throw new Error('User not found')
   }
 
-  user.isOnline = isOnline
+  user.isOnline = status
   await user.save()
 }
 
-async function getSocketUser(socket: Socket) {
+async function registerUserSocket(socket: Socket) {
   const cookies = socket.handshake.headers.cookie
   if (!cookies) {
     throw new Error('Action unauthorized')
@@ -96,25 +112,35 @@ async function getSocketUser(socket: Socket) {
   await redis.rpush(String(user.id), socket.id)
 }
 
+async function broadcastUserStatus(
+  event: 'friend-connected' | 'friend-disconnected',
+  socket: Socket
+) {
+  const userId = socket.data.user.id
+  const user = await User.find(userId)
+
+  if (!user) throw new Error('User not found')
+
+  const friends = await user!.related('friends').query().where('isOnline', true)
+
+  const sockets: string[] = []
+  for (let friend of friends) {
+    const friendSockets = await redis.lrange(String(friend.id), 0, -1)
+    sockets.push(...friendSockets)
+  }
+
+  io.to(sockets).emit(event, user)
+}
+
 async function onDisconnection(socket: Socket) {
   logger.info(`socket disconnected: ${socket.id}`)
 
   const userId = socket.data.user?.id
   await redis.lrem(userId, 1, socket.id)
+
+  const stillConnected = await redis.exists(userId)
+  if (stillConnected) return
+
   await updateUserStatus(userId, false)
+  broadcastUserStatus('friend-disconnected', socket)
 }
-/* -------------------------------------------------------------------------- */
-
-function onConnection(socket: Socket) {
-  logger.info(`socket connected: ${socket.id}`)
-
-  privateChatHandlers(io, socket)
-  channelHandlers(io, socket)
-
-  socket.on('disconnect', () => onDisconnection(socket))
-}
-
-io.use(authenticate)
-io.use(updateUserStatusMiddleware)
-io.use(joinChannels)
-io.on('connection', onConnection)

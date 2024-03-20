@@ -1,8 +1,10 @@
 import Image from "next/image"
 import Link from "next/link"
-import { useUser } from "@/stores/user"
+import { useUser } from "@/_stores/user"
 import { PrivateChatHistory } from "@/types"
+import { useSuspenseQuery } from "@tanstack/react-query"
 
+import { getUser } from "@/lib/actions/client"
 import { since } from "@/lib/utils"
 
 import { StatusDot } from "../chat_app/status_dot"
@@ -12,10 +14,13 @@ type InboxContactProps = {
 }
 
 export function InboxContact({ chat }: InboxContactProps) {
-  const { profile } = useUser()
+  const { data: user } = useSuspenseQuery({
+    queryKey: ["user"],
+    queryFn: getUser,
+  })
   const { last_message } = chat
 
-  const senderIsCurrentUser = chat.sender.id === profile?.id
+  const senderIsCurrentUser = chat.senderId === user.profile.id
   const receiver = senderIsCurrentUser ? chat.receiver : chat.sender
 
   return (

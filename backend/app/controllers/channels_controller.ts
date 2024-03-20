@@ -5,8 +5,15 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { randomBytes } from 'crypto'
 
 export default class ChannelsController {
-  async store({ auth, request }: HttpContext) {
-    const user = auth.user!
+  async store({ auth, request, response }: HttpContext) {
+    const user = auth.user
+
+    if (!user) {
+      return response.abort({
+        message: 'You must be logged in to perform this action',
+        status: 401,
+      })
+    }
 
     const { name } = await request.validateUsing(channelCreationValidator)
     const userId = user.id

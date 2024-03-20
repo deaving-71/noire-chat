@@ -2,8 +2,8 @@
 
 import { useFriendsContext } from "@/context/friends_context"
 import { useSocket } from "@/context/socket"
-import { useStore } from "@/stores"
-import { useFriends } from "@/stores/_friends"
+import { useStore } from "@/_stores/_index"
+import { useFriends } from "@/_stores/_friends"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"

@@ -1,13 +1,20 @@
-import vine from '@vinejs/vine'
+import vine, { SimpleMessagesProvider } from '@vinejs/vine'
 
 export const channelCreationValidator = vine.compile(
   vine.object({
-    name: vine.string().unique(async (db, value) => {
-      const channel = await db.from('channels').where('name', value).first()
-      return !channel
-    }),
+    name: vine
+      .string()
+      .minLength(2)
+      .unique(async (db, value) => {
+        const channel = await db.from('channels').where('name', value).first()
+        return !channel
+      }),
   })
 )
+
+channelCreationValidator.messagesProvider = new SimpleMessagesProvider({
+  'name.minLength': 'Channel name must be at least 2 characters',
+})
 
 export const channelShowValidator = vine.compile(
   vine.object({

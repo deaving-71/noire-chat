@@ -7,6 +7,8 @@ import { useSuspenseQuery } from "@tanstack/react-query"
 
 import { getUser } from "@/lib/actions/client"
 import { cn } from "@/lib/utils"
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Tooltip,
   TooltipContent,
@@ -14,10 +16,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
+import { CreateChannelForm, JoinChannelForm } from "../channel"
 import { Icons } from "../icons"
 
 export function Sidebar() {
-  const { data } = useSuspenseQuery({
+  const { data, refetch } = useSuspenseQuery({
     queryKey: ["user"],
     queryFn: getUser,
   })
@@ -39,13 +42,34 @@ export function Sidebar() {
         </li>
       </ul>
       <div className="space-y-2">
-        <h2 className="px-3 font-normal leading-3 tracking-normal text-muted-foreground">
-          Channels
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="px-3 font-normal leading-3 tracking-normal text-muted-foreground">
+            Channels
+          </h2>
+          <Dialog>
+            <DialogTrigger className="grid size-4 place-content-center rounded-full p-2.5 hover:bg-secondary/40">
+              <Icons.plus size={14} />
+            </DialogTrigger>
+            <DialogContent>
+              <Tabs defaultValue="join" className="w-full">
+                <TabsList>
+                  <TabsTrigger value="join">Join a channel</TabsTrigger>
+                  <TabsTrigger value="create">Create a channel</TabsTrigger>
+                </TabsList>
+                <TabsContent value="join">
+                  <JoinChannelForm refetch={refetch} />
+                </TabsContent>
+                <TabsContent value="create">
+                  <CreateChannelForm refetch={refetch} />
+                </TabsContent>
+              </Tabs>
+            </DialogContent>
+          </Dialog>
+        </div>
         <ul>
           {channels.map((channel) => (
             <li key={channel.slug}>
-              <TooltipProvider delayDuration={0}>
+              <TooltipProvider delayDuration={400}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     {/* //TODO: fix props from the asChild comp to be passed correctly */}
