@@ -1,7 +1,15 @@
-import { DateTime } from 'luxon'
-import { BaseModel, afterFetch, beforeSave, belongsTo, column } from '@adonisjs/lucid/orm'
-import { stringify, parse } from 'flatted'
-import User from './user.js'
+import {
+  afterFetch,
+  afterFind,
+  afterSave,
+  BaseModel,
+  beforeCreate,
+  beforeSave,
+  beforeUpdate,
+  belongsTo,
+  column,
+} from '@adonisjs/lucid/orm'
+import User from '#models/user'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 
 export default class Notification extends BaseModel {
@@ -11,44 +19,38 @@ export default class Notification extends BaseModel {
   @column()
   declare userId: number
 
+  /**
+   * friend requests received
+   */
   @column()
-  declare privateChats: number[]
+  declare friendRequestsCount: number
 
   @column()
-  declare friendRequests: number[]
+  declare privateChats: number[]
 
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime
-
-  /*
-  @afterFetch()
-  static async parseyArrays(notifications: Notification[]) {
-    await Promise.all(
-      notifications.map((notification) => {
-        if (!notification) return
-
-        if (notification.privateChats) {
-          notification.privateChats = parse(notification.privateChats)
-        }
-
-        if (notification.friendRequests) {
-          notification.friendRequests = parse(notification.friendRequests)
-        }
-        return notification
-      })
-    )
-  }
-
+  @beforeCreate()
+  @beforeUpdate()
   @beforeSave()
-  public static async stringifyArrays(notification: Notification) {
-    notification.privateChats = stringify(notification.privateChats)
-    notification.friendRequests = stringify(notification.friendRequests)
+  static async stringifyArrays(notification: Notification) {
+    //@ts-ignore
+    notification.privateChats = JSON.stringify(notification.privateChats)
   }
-  */
+
+  @afterFetch()
+  static async parseArrays(notifications: Notification[]) {
+    notifications.forEach((notification) => {
+      //@ts-ignore
+      notification.privateChats = JSON.parse(notification.privateChats)
+    })
+  }
+
+  @afterSave()
+  @afterFind()
+  static async parse(notification: Notification) {
+    //@ts-ignore
+    notification.privateChats = JSON.parse(notification.privateChats)
+  }
 }

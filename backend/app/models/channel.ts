@@ -24,11 +24,8 @@ export default class Channel extends BaseModel {
   declare messages: HasMany<typeof ChannelMessage>
 
   @manyToMany(() => User, {
-    pivotTable: 'membership',
-    localKey: 'id',
-    pivotForeignKey: 'member_id',
-    relatedKey: 'id',
-    pivotRelatedForeignKey: 'channel_id',
+    pivotTable: 'channel_members',
+    pivotColumns: ['last_seen_messages'],
   })
   declare members: ManyToMany<typeof User>
 

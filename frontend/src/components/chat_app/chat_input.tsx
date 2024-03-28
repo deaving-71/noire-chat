@@ -1,8 +1,5 @@
 "use client"
 
-import { useUser } from "@/_stores/user"
-import { useSocket } from "@/context/socket"
-import { PrivateChatMessage } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -13,13 +10,16 @@ import { Icons } from "../icons"
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 
-export type ChatInputProps = { sendMessage: (content: string) => void }
+export type ChatInputProps = {
+  sendMessage: (content: string) => void
+  onInputFocus?: Function
+}
 
 const formSchema = z.object({
   content: z.string().min(1),
 })
 
-export function ChatInput({ sendMessage }: ChatInputProps) {
+export function ChatInput({ sendMessage, onInputFocus }: ChatInputProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,6 +48,9 @@ export function ChatInput({ sendMessage }: ChatInputProps) {
                   <Input
                     type="text"
                     placeholder="Type your message..."
+                    onFocus={() => {
+                      onInputFocus && onInputFocus()
+                    }}
                     {...field}
                   />
                   <Button size="icon" disabled={!form.formState.isValid}>

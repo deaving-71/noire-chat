@@ -1,24 +1,35 @@
 "use client"
 
-import { useFriendsContext } from "@/context/friends_context"
-
+import { useGetFriendsQuery } from "@/hooks/friends"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
+import { Count } from "./count"
 import { FriendRequest } from "./friend_request"
 
 export function FriendRequestsList() {
-  const { friendRequests } = useFriendsContext()
+  const { data } = useGetFriendsQuery()
+  const { friend_requests } = data
+
+  const incomingRequestsCount = friend_requests.incoming.length
+  const outgoingRequestsCount = friend_requests.outgoing.length
+  const allRequestsCount = incomingRequestsCount + outgoingRequestsCount
 
   return (
     <Tabs defaultValue="all" className="h-[calc(100dvh-64px)] overflow-auto">
       <TabsList className="m-4">
-        <TabsTrigger value="all">All</TabsTrigger>
-        <TabsTrigger value="incoming">Incoming</TabsTrigger>
-        <TabsTrigger value="outgoing">Outgoing</TabsTrigger>
+        <TabsTrigger value="all">
+          All <Count count={allRequestsCount} />
+        </TabsTrigger>
+        <TabsTrigger value="incoming">
+          Incoming <Count count={incomingRequestsCount} />
+        </TabsTrigger>
+        <TabsTrigger value="outgoing">
+          Outgoing <Count count={outgoingRequestsCount} />
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="all">
         <ul>
-          {friendRequests.outgoing.map((request) => (
+          {friend_requests.outgoing.map((request) => (
             <li key={request.id + "all-outgoing"}>
               <FriendRequest
                 requestId={request.id}
@@ -27,7 +38,7 @@ export function FriendRequestsList() {
               />
             </li>
           ))}
-          {friendRequests.incoming.map((request) => (
+          {friend_requests.incoming.map((request) => (
             <li key={request.id + "all-incoming"}>
               <FriendRequest
                 requestId={request.id}
@@ -39,7 +50,7 @@ export function FriendRequestsList() {
         </ul>
       </TabsContent>
       <TabsContent value="incoming">
-        {friendRequests.incoming.map((request) => (
+        {friend_requests.incoming.map((request) => (
           <li key={request.id + "incoming"}>
             <FriendRequest
               requestId={request.id}
@@ -50,7 +61,7 @@ export function FriendRequestsList() {
         ))}
       </TabsContent>
       <TabsContent value="outgoing">
-        {friendRequests.outgoing.map((request) => (
+        {friend_requests.outgoing.map((request) => (
           <li key={request.id + "outgoing"}>
             <FriendRequest
               requestId={request.id}

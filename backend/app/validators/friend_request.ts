@@ -12,6 +12,8 @@ export const storeFriendRequestValidator = vine.compile(
 
 export const destroyFriendRequestValidator = vine.compile(
   vine.object({
+    isSender: vine.boolean(),
+
     params: vine.object({
       userId: vine.number(),
     }),

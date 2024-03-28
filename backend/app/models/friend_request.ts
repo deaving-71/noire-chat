@@ -19,12 +19,6 @@ export default class FriendRequest extends BaseModel {
   @belongsTo(() => User, { foreignKey: 'receiverId' })
   declare receiver: BelongsTo<typeof User>
 
-  @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime
-
-  @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime
-
   static async getUserFriendRequests(userId: number) {
     const friendRequestsSent = await this.query().where({ senderId: userId }).preload('receiver')
 

@@ -1,13 +1,14 @@
 "use client"
 
+import { useGetFriendsQuery } from "@/hooks/friends"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-import { useFriendsContext } from "../../context/friends_context"
 import { ContactUser } from "./contact_user"
 import { Count } from "./count"
 
 export function ContactList() {
-  const { friends } = useFriendsContext()
+  const { data } = useGetFriendsQuery()
+  const { friends } = data
 
   const onlineFriendsCount = friends.online.length
   const offlineFriendsCount = friends.offline.length

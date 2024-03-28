@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from "react"
+import { useSocket } from "@/context/socket"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   QueryObserverResult,
@@ -7,7 +9,7 @@ import {
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { joinChannel } from "@/lib/actions/client"
+import { joinChannel } from "@/lib/actions/_client"
 import logger from "@/lib/logger"
 import { responseErrorValdiator } from "@/lib/validators/error"
 import { Button } from "@/components/ui/button"
@@ -31,9 +33,11 @@ export type ChannelFormAction = {
   refetch: (
     options?: RefetchOptions | undefined
   ) => Promise<QueryObserverResult<any, Error>>
+  setOpen: Dispatch<SetStateAction<boolean>>
 }
 
-export function JoinChannelForm({ refetch }: ChannelFormAction) {
+export function JoinChannelForm({ refetch, setOpen }: ChannelFormAction) {
+  const { ws } = useSocket()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -44,8 +48,9 @@ export function JoinChannelForm({ refetch }: ChannelFormAction) {
   const { mutate, isPending } = useMutation({
     mutationFn: joinChannel,
     onSuccess: () => {
-      form.reset()
       refetch()
+      ws?.socket.emit("channel:join-room", form.getValues("slug"))
+      setOpen(false)
     },
     onError: (_error) => {
       const error = responseErrorValdiator.parse(_error)

@@ -1,10 +1,9 @@
 "use client"
 
-import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { User } from "@/types"
 
-import { initiateChat } from "@/lib/actions/client"
+import { useInitiatePrivateChat } from "@/hooks/private_chats"
 
 import { UserCard } from "../common"
 import { Icons } from "../icons"
@@ -14,6 +13,11 @@ type ContactUserProps = User
 
 export function ContactUser(user: ContactUserProps) {
   const router = useRouter()
+  const { mutate: initiateChat } = useInitiatePrivateChat({
+    onSuccess: (chatId) => {
+      router.push(`/app/inbox/${chatId}`)
+    },
+  })
 
   return (
     <div className="group p-3 hover:bg-secondary/40">
@@ -34,10 +38,7 @@ export function ContactUser(user: ContactUserProps) {
             className="size-9 rounded-full"
             variant="secondary"
             size="icon"
-            onClick={async () => {
-              const chatId = await initiateChat(user.id)
-              router.push(`/app/inbox/${chatId}`)
-            }}
+            onClick={() => initiateChat(user.id)}
           >
             <Icons.message size={18} />
           </Button>

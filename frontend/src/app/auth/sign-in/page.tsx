@@ -6,8 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import logger from "@/lib/logger"
-import { useAuth } from "@/hooks/useAuth"
+import { useSignIn } from "@/hooks/auth"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -39,14 +38,12 @@ export default function LoginPage() {
   })
 
   const router = useRouter()
-  const { signIn } = useAuth()
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const user = await signIn(values)
-      logger.info(user)
+  const { mutate: signIn } = useSignIn({
+    onSuccess: () => {
       router.push("/app")
-    } catch (error) {
+    },
+    onError: (error) => {
       if (
         error &&
         typeof error === "object" &&
@@ -55,7 +52,11 @@ export default function LoginPage() {
       ) {
         form.setError("root", { message: error.root })
       }
-    }
+    },
+  })
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    signIn(values)
   }
 
   return (

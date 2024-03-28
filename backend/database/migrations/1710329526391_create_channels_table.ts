@@ -13,7 +13,6 @@ export default class extends BaseSchema {
       table.foreign('owner_id').references('users.id').onDelete('CASCADE')
 
       table.timestamp('created_at')
-      table.timestamp('updated_at')
     })
   }
 

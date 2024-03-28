@@ -1,23 +1,19 @@
 import Image from "next/image"
 import Link from "next/link"
-import { useUser } from "@/_stores/user"
 import { PrivateChatHistory } from "@/types"
-import { useSuspenseQuery } from "@tanstack/react-query"
 
-import { getUser } from "@/lib/actions/client"
-import { since } from "@/lib/utils"
+import { cn, since } from "@/lib/utils"
+import { useGetProfileQuery } from "@/hooks/profile"
 
 import { StatusDot } from "../chat_app/status_dot"
 
 type InboxContactProps = {
   chat: PrivateChatHistory
+  seen: boolean
 }
 
-export function InboxContact({ chat }: InboxContactProps) {
-  const { data: user } = useSuspenseQuery({
-    queryKey: ["user"],
-    queryFn: getUser,
-  })
+export function InboxContact({ chat, seen }: InboxContactProps) {
+  const { data: user } = useGetProfileQuery()
   const { last_message } = chat
 
   const senderIsCurrentUser = chat.senderId === user.profile.id
@@ -44,13 +40,25 @@ export function InboxContact({ chat }: InboxContactProps) {
 
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <span className="font-bold">{receiver.username}</span>{" "}
+            <span
+              className={cn(
+                "font-bold",
+                seen ? "text-foreground" : "text-foreground/50"
+              )}
+            >
+              {receiver.username}
+            </span>
             <span className="font-medium text-muted-foreground">
               {since(last_message.createdAt)}
             </span>
           </div>
           <div className="table w-full table-fixed">
-            <p className="table-cell truncate">
+            <p
+              className={cn(
+                "table-cell truncate",
+                seen ? "text-foreground" : "text-foreground/50"
+              )}
+            >
               {senderIsCurrentUser && "You: "} {last_message.content}
             </p>
           </div>

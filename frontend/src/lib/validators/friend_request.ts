@@ -1,21 +1,17 @@
 import { z } from "zod"
 
-import { UserValidator } from "./user"
+import { userValidator } from "./user"
 
-export const IncomingFriendRequest = z.object({
+export const incomingFriendRequest = z.object({
   id: z.number(),
   senderId: z.number(),
   receiverId: z.number(),
-  sender: UserValidator,
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  sender: userValidator,
 })
 
-export const OutgoingFriendRequest = z.object({
+export const outgoingFriendRequest = z.object({
   id: z.number(),
   senderId: z.number(),
   receiverId: z.number(),
-  receiver: UserValidator,
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  receiver: userValidator,
 })

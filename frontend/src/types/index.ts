@@ -1,29 +1,30 @@
 import { z } from "zod"
 
 import {
-  privateChatMessageValidator,
-  privateChatValidator,
-  UserValidator,
-} from "@/lib/validators/"
-import {
   channelMembersValidator,
   channelMessageValidator,
   channelValidator,
 } from "@/lib/validators/channel"
 import {
-  IncomingFriendRequest,
-  OutgoingFriendRequest,
+  incomingFriendRequest,
+  outgoingFriendRequest,
 } from "@/lib/validators/friend_request"
+import { notificationsValidator } from "@/lib/validators/notifcations"
+import {
+  privateChatMessageValidator,
+  privateChatValidator,
+} from "@/lib/validators/private-chat"
+import { userValidator } from "@/lib/validators/user"
 
-export type User = z.infer<typeof UserValidator>
+export type User = z.infer<typeof userValidator>
 
 export type FriendsList = {
   online: User[]
   offline: User[]
 }
 
-export type IncomingFriendRequest = z.infer<typeof IncomingFriendRequest>
-export type OutgoingFriendRequest = z.infer<typeof OutgoingFriendRequest>
+export type IncomingFriendRequest = z.infer<typeof incomingFriendRequest>
+export type OutgoingFriendRequest = z.infer<typeof outgoingFriendRequest>
 
 export type FriendRequests = {
   outgoing: OutgoingFriendRequest[]
@@ -39,6 +40,8 @@ export type PrivateChatHistory = Omit<PrivateChat, "messages"> & {
 export type Channel = z.infer<typeof channelValidator>
 export type ChannelMessage = z.infer<typeof channelMessageValidator>
 export type ChannelMembers = z.infer<typeof channelMembersValidator>
+
+export type Notifications = z.infer<typeof notificationsValidator>
 
 export type CallbackPayload =
   | {

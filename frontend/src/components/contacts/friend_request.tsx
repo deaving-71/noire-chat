@@ -1,11 +1,14 @@
 "use client"
 
 import Image from "next/image"
-import { useFriendsContext } from "@/context/friends_context"
-import { User } from "@/types"
-import { useMutation } from "@tanstack/react-query"
+import { FriendRequests, FriendsList, User } from "@/types"
+import { useQueryClient } from "@tanstack/react-query"
 
-import { acceptFriendRequest, removeFriendRequest } from "@/lib/actions/client"
+import { appendFriend, popFriendRequest } from "@/lib/actions/friend_requests"
+import {
+  useAcceptFriendRequest,
+  useDeleteFriendRequest,
+} from "@/hooks/friend_requests"
 
 import { LoadingSpinner } from "../common"
 import { Icons } from "../icons"
@@ -18,22 +21,39 @@ type ContactUserProps = {
 }
 
 export function FriendRequest({ type, user, requestId }: ContactUserProps) {
-  const { removeRequest, appendFriend } = useFriendsContext()
+  const queryClient = useQueryClient()
 
-  const { mutate: accept, isPending: isAcceptancePending } = useMutation({
-    mutationKey: ["friend_request", "accept"],
-    mutationFn: acceptFriendRequest,
-    onSuccess: (user) => {
-      appendFriend(user)
-      removeRequest(requestId)
-    },
-  })
+  const { mutate: acceptFriendRequest, isPending: isAcceptancePending } =
+    useAcceptFriendRequest({
+      onSuccess: (newFriend) => {
+        const baseData = queryClient.getQueryData<{
+          friends: FriendsList
+          friend_requests: FriendRequests
+        }>(["friends"])
 
-  const { mutate: remove, isPending: isRemovalPending } = useMutation({
-    mutationKey: ["friend_request", "destroy"],
-    mutationFn: removeFriendRequest,
-    onSuccess: () => removeRequest(requestId),
-  })
+        if (baseData)
+          queryClient.setQueryData(["friends"], () => {
+            const updatedData = popFriendRequest(baseData, requestId)
+            return appendFriend(updatedData, newFriend)
+          })
+      },
+    })
+
+  const { mutate: removeFriendRequest, isPending: isRemovalPending } =
+    useDeleteFriendRequest({
+      onSuccess: () => {
+        const baseData = queryClient.getQueryData<{
+          friends: FriendsList
+          friend_requests: FriendRequests
+        }>(["friends"])
+
+        if (baseData)
+          queryClient.setQueryData(
+            ["friends"],
+            popFriendRequest(baseData, requestId)
+          )
+      },
+    })
 
   return (
     <div className="group p-3 hover:bg-secondary/40">
@@ -66,7 +86,7 @@ export function FriendRequest({ type, user, requestId }: ContactUserProps) {
               className="size-9 rounded-full"
               variant="secondary"
               size="icon"
-              onClick={() => accept(user.id)}
+              onClick={() => acceptFriendRequest(user.id)}
               disabled={isAcceptancePending && isRemovalPending}
             >
               {isAcceptancePending ? (
@@ -80,7 +100,12 @@ export function FriendRequest({ type, user, requestId }: ContactUserProps) {
             className="size-9 rounded-full"
             variant="secondary"
             size="icon"
-            onClick={() => remove(user.id)}
+            onClick={() =>
+              removeFriendRequest({
+                userId: user.id,
+                isSender: type === "outgoing",
+              })
+            }
             disabled={isAcceptancePending && isRemovalPending}
           >
             {isRemovalPending ? <LoadingSpinner /> : <Icons.xmark />}

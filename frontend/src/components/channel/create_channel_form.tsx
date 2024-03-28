@@ -1,9 +1,10 @@
+import { useSocket } from "@/context/socket"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { createChannel } from "@/lib/actions/client"
+import { createChannel } from "@/lib/actions/_client"
 import logger from "@/lib/logger"
 import { responseErrorValdiator } from "@/lib/validators/error"
 import { Button } from "@/components/ui/button"
@@ -24,7 +25,8 @@ const formSchema = z.object({
   name: z.string().min(2, "Channel name must be at least 2 characters"),
 })
 
-export function CreateChannelForm({ refetch }: ChannelFormAction) {
+export function CreateChannelForm({ refetch, setOpen }: ChannelFormAction) {
+  const { ws } = useSocket()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,9 +36,10 @@ export function CreateChannelForm({ refetch }: ChannelFormAction) {
 
   const { mutate, isPending } = useMutation({
     mutationFn: createChannel,
-    onSuccess: () => {
-      form.reset()
-      refetch()
+    onSuccess: async (channel) => {
+      await refetch()
+      ws?.socket.emit("channel:join-room", channel.slug)
+      setOpen(false)
     },
     onError: (_error) => {
       const error = responseErrorValdiator.parse(_error)

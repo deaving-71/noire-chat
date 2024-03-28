@@ -1,8 +1,13 @@
 import Channel from '#models/channel'
 import User from '#models/user'
-import { channelCreationValidator, channelShowValidator } from '#validators/channel'
+import {
+  channelCreationValidator,
+  channelShowValidator,
+  channelUpdateValidator,
+} from '#validators/channel'
 import type { HttpContext } from '@adonisjs/core/http'
 import { randomBytes } from 'crypto'
+import { DateTime } from 'luxon'
 
 export default class ChannelsController {
   async store({ auth, request, response }: HttpContext) {
@@ -20,7 +25,7 @@ export default class ChannelsController {
     const slug = randomBytes(4).toString('hex')
 
     const channel = await Channel.create({ name, ownerId: userId, slug })
-    user.related('channels').attach([channel.id])
+    await user.related('channels').attach([channel.id])
 
     return channel
   }
@@ -42,9 +47,31 @@ export default class ChannelsController {
     if (!_channel) throw new Error('Channel not found')
 
     const { messages, members, ...channel } = _channel.serialize()
-    const onlineMembers = members.filter((m: User) => m.isOnline === true)
-    const offlineMembers = members.filter((m: User) => m.isOnline === false)
+
+    const _members = members.filter((member: User) => member.id !== channel.owner.id)
+    const onlineMembers = _members.filter((m: User) => m.isOnline === true)
+    const offlineMembers = _members.filter((m: User) => m.isOnline === false)
 
     return { channel, members: { online: onlineMembers, offline: offlineMembers }, messages }
+  }
+
+  async update({ auth, response, request }: HttpContext) {
+    const user = auth.user
+
+    const { params } = await request.validateUsing(channelUpdateValidator)
+    const { id } = params
+
+    if (!user) {
+      return response.abort({
+        message: 'You must be logged in to perform this action',
+        status: 401,
+      })
+    }
+
+    await user
+      .related('channels')
+      .pivotQuery()
+      .where('channel_id', id)
+      .update({ last_seen_messages: DateTime.now().toISO() })
   }
 }

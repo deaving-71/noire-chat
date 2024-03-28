@@ -4,7 +4,7 @@ type FetcherOptions = Omit<RequestInit, "body"> & {
   body?: Object | any[]
 }
 
-export const fetcher = (url: string, opts?: FetcherOptions) => {
+export async function fetcher(url: string, opts?: FetcherOptions) {
   const defaultHeaders = {
     Accept: "application/json",
     "Content-Type": "application/json",
@@ -21,7 +21,21 @@ export const fetcher = (url: string, opts?: FetcherOptions) => {
     mode: "cors",
   }
 
-  return fetch(api(url), options)
+  const response = await fetch(api(url), options)
+
+  const result = await response.json()
+
+  if (!response.ok) {
+    if (
+      (typeof result === "object" || typeof result === "function") &&
+      result !== null
+    )
+      throw result
+
+    throw "Internal server error"
+  }
+
+  return result
 }
 
 /**

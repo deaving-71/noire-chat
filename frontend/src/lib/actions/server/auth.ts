@@ -15,7 +15,7 @@ export async function checkAuthentication(requestHeaders: Headers) {
 
     return (await response.text()) === "true"
   } catch (error) {
-    console.error("Error verifying authentication:", error)
+    console.error("Error verifying authentication:\n", error)
     return false // Default to not authenticated for error handling
   }
 }

@@ -1,39 +1,58 @@
 "use client"
 
+import { Dispatch, SetStateAction } from "react"
 import { useFriendsContext } from "@/context/friends_context"
-import { useSocket } from "@/context/socket"
-import { useStore } from "@/_stores/_index"
-import { useFriends } from "@/_stores/_friends"
+import { FriendRequests, FriendsList } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { produce } from "immer"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { sendFriendRequest } from "@/lib/actions/client"
+import { sendFriendRequest } from "@/lib/actions/_client"
+import { appendOutgoingFriendRequest } from "@/lib/actions/friend_requests"
 import logger from "@/lib/logger"
 import { responseErrorValdiator } from "@/lib/validators/error"
+import { useSendFriendRequest } from "@/hooks/friend_requests"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+
+import { LoadingSpinner } from "../common"
+
+type AddFriendFormProps = {
+  setOpen: Dispatch<SetStateAction<boolean>>
+}
 
 const formSchema = z.object({
   username: z.string().min(2, "Please enter a valid username"),
 })
 
-export function AddFriendForm() {
-  const { appendOutgoingRequest } = useFriendsContext()
-
+export function AddFriendForm({ setOpen }: AddFriendFormProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       username: "",
     },
   })
+  const queryClient = useQueryClient()
 
-  const { mutate } = useMutation({
-    mutationKey: ["friend_request", "send"],
-    mutationFn: sendFriendRequest,
-    onSuccess: appendOutgoingRequest,
+  const { mutate: sendFriendRequest, isPending } = useSendFriendRequest({
+    onSuccess: (request) => {
+      const baseData = queryClient.getQueryData<{
+        friends: FriendsList
+        friend_requests: FriendRequests
+      }>(["friends"])
+
+      if (baseData) {
+        queryClient.setQueryData(
+          ["friends"],
+          appendOutgoingFriendRequest(baseData, request)
+        )
+      }
+
+      setOpen(false)
+    },
     onError: (_error) => {
       const error = responseErrorValdiator.parse(_error)
       logger.error(error)
@@ -42,7 +61,9 @@ export function AddFriendForm() {
   })
 
   function onSubmit({ username }: z.infer<typeof formSchema>) {
-    mutate(username)
+    if (isPending) return
+
+    sendFriendRequest(username)
   }
 
   return (
@@ -74,9 +95,9 @@ export function AddFriendForm() {
                     type="submit"
                     className="basis-[80px]"
                     size="sm"
-                    disabled={!form.formState.isValid}
+                    disabled={!form.formState.isValid && isPending}
                   >
-                    Send
+                    {isPending ? <LoadingSpinner /> : "Send"}
                   </Button>
                 </div>
               </FormControl>

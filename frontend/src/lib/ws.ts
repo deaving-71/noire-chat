@@ -1,5 +1,3 @@
-import { useUser } from "@/_stores/user"
-import { Callback } from "@/types"
 import { io } from "socket.io-client"
 
 export class Ws {
@@ -27,5 +25,9 @@ export class Ws {
 
   sendChannelMessage(data: { slug: string; content: string }) {
     this.socket.emit("channel:send-message", data)
+  }
+
+  joinChannel(slug: string) {
+    this.socket.emit("channel:join-room", slug)
   }
 }

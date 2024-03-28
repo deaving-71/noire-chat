@@ -1,6 +1,8 @@
+import { z } from "zod"
+
 import { fetcher } from "@/lib/fetcher"
-import { UserValidator } from "@/lib/validators"
-import { OutgoingFriendRequest } from "@/lib/validators/friend_request"
+import { outgoingFriendRequest } from "@/lib/validators/friend_request"
+import { userValidator } from "@/lib/validators/user"
 
 export async function getFriendRequests() {
   const response = await fetcher("/friend-requests")
@@ -22,9 +24,7 @@ export async function sendFriendRequest(receiverUsername: string) {
 
   if (!response.ok) throw JSON.stringify(result)
 
-  if (response.status === 400 || response.status === 404) throw result
-
-  return OutgoingFriendRequest.parse(result)
+  return outgoingFriendRequest.parse(result)
 }
 
 export async function acceptFriendRequest(senderId: number) {
@@ -37,14 +37,13 @@ export async function acceptFriendRequest(senderId: number) {
 
   if (!response.ok) throw JSON.stringify(result)
 
-  if (response.status === 400 || response.status === 404) throw result
-
-  return UserValidator.parse(result)
+  return userValidator.parse(result)
 }
 
-export async function removeFriendRequest(userId: number) {
+export async function removeFriendRequest(userId: number, isSender: boolean) {
   const response = await fetcher(`/friend-requests/${userId}`, {
     method: "DELETE",
+    body: { isSender },
   })
 
   if (!response.ok) throw "Internal server error"

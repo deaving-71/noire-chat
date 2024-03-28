@@ -5,7 +5,7 @@ export default class extends BaseSchema {
 
   async up() {
     this.schema.createTable(this.tableName, (table) => {
-      table.increments('id').notNullable()
+      table.increments('id')
       table.string('username').notNullable().unique()
       table.string('email', 254).notNullable().unique()
       table.string('avatar').defaultTo('default_avatar.png') //TODO: <<< migrate
@@ -13,8 +13,8 @@ export default class extends BaseSchema {
       table.boolean('is_online').defaultTo(false)
       table.boolean('status').defaultTo(true)
 
-      table.timestamp('created_at').notNullable()
-      table.timestamp('updated_at').nullable()
+      table.timestamp('created_at', { useTz: true })
+      table.timestamp('updated_at', { useTz: true })
     })
   }
 

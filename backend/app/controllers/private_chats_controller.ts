@@ -11,7 +11,6 @@ export default class PrivateChatsController {
 
     const user = await User.find(userId)
 
-    // ! preload friend that user is chatting with to display on the inbox list
     const _sentPrivateChats = await user
       ?.related('sentPrivateChats')
       .query()
@@ -78,7 +77,7 @@ export default class PrivateChatsController {
     return chat.id
   }
 
-  async show({ auth, request }: HttpContext) {
+  async show({ auth, request, response }: HttpContext) {
     const userId = auth.user?.id
 
     if (!userId) throw new Error('User not found')
@@ -86,12 +85,16 @@ export default class PrivateChatsController {
     const id = request.param('id')
     const chat = PrivateChat.query()
       .where('id', id)
-      // .where('senderId', userId)
-      // .orWhere('receiverId', userId)
+      .where('senderId', userId)
+      .orWhere('receiverId', userId)
       .preload('sender')
       .preload('receiver')
       .preload('messages', (messagesQuery) => messagesQuery.preload('sender'))
       .first()
+
+    if (!chat) {
+      return response.notFound({ message: 'This chat does not exist' })
+    }
 
     return chat
   }

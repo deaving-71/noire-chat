@@ -18,6 +18,7 @@ const FriendRequestController = () => import('#controllers/friend_requests_contr
 const PrivateChatsController = () => import('#controllers/private_chats_controller')
 const ChannelsController = () => import('#controllers/channels_controller')
 const MembershipsController = () => import('#controllers/memberships_controller')
+const NotificationsController = () => import('#controllers/notifications_controller')
 
 router
   .group(() => {
@@ -44,11 +45,15 @@ router
         router.post('/private-chats', [PrivateChatsController, 'store'])
 
         router.get('/channels/:slug', [ChannelsController, 'show'])
+        router.put('/channels/:id', [ChannelsController, 'update'])
         router.post('/channels', [ChannelsController, 'store'])
 
         router.put('/memberships/:slug', [MembershipsController, 'update'])
 
-        router.delete('/logout', [LoginController, 'destroy'])
+        router.get('/notifications', [NotificationsController, 'show'])
+        router.put('/notifications', [NotificationsController, 'update'])
+
+        router.delete('/auth/logout', [LoginController, 'destroy'])
       })
       .use(middleware.auth())
 
@@ -59,8 +64,8 @@ router
     */
     router
       .group(() => {
-        router.post('register', [RegisterController, 'store'])
-        router.post('login', [LoginController, 'store'])
+        router.post('/register', [RegisterController, 'store'])
+        router.post('/login', [LoginController, 'store'])
         router.get('/', async ({ auth }) => {
           return await auth.check()
         })

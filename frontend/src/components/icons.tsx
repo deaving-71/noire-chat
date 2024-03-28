@@ -1,13 +1,16 @@
 import {
   Check,
   Command,
+  Github,
   Hash,
   Inbox,
   Loader2,
+  LogOut,
   MessageSquare,
   Moon,
   Plus,
   Send,
+  Settings,
   SunMedium,
   UsersRound,
   X,
@@ -33,6 +36,9 @@ const icons = {
   checkmark: Check,
   load: Loader2,
   plus: Plus,
+  github: Github,
+  settings: Settings,
+  logout: LogOut,
 }
 
 function TripleDot() {

@@ -24,7 +24,9 @@ export async function getChannel(slug: string) {
 }
 
 export async function joinChannel(slug: string) {
-  const response = await fetcher(`/memberships/${slug}`)
+  const response = await fetcher(`/memberships/${slug}`, {
+    method: "PUT",
+  })
 
   const result = await response.json()
 
@@ -43,5 +45,5 @@ export async function createChannel(name: string) {
 
   if (!response.ok) throw JSON.stringify(result)
 
-  return result
+  return channelValidator.parse(result)
 }

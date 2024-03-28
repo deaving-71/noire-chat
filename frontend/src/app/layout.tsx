@@ -5,7 +5,7 @@ import { Open_Sans } from "next/font/google"
 
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
-import { Provider } from "@/components/providers"
+import { GlobalProvider } from "@/components/providers/global_provider"
 
 const font = Open_Sans({ subsets: ["latin"] })
 
@@ -73,7 +73,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           font.className
         )}
       >
-        <Provider>{children}</Provider>
+        <GlobalProvider>{children}</GlobalProvider>
       </body>
     </html>
   )

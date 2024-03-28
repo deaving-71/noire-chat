@@ -1,5 +1,6 @@
 import Friend from '#models/friend'
 import FriendRequest from '#models/friend_request'
+import Notification from '#models/notification'
 import User from '#models/user'
 import { io } from '#start/socket'
 import {
@@ -20,50 +21,76 @@ export default class FriendRequestsController {
 
     const receiver = await User.query().where('username', receiverUsername).first()
     if (!receiver) {
-      return response.status(404).send({
-        error: 'NOT_FOUND',
-        message: 'Username seem to be incorrect, double check it please',
-      })
+      return response.notFound({ message: 'Username seem to be incorrect, double check it please' })
     }
 
     const ids = { senderId: user.id, receiverId: receiver.id }
 
     const areFriends = await Friend.areFriends(ids)
     if (areFriends) {
-      return response.status(400).send({
-        error: 'BAD_REQUEST',
-        message: 'You are already friends with this user',
-      })
+      return response.badRequest({ message: 'You are already friends with this user' })
     }
 
     const requestExists = await FriendRequest.get(ids)
     if (requestExists) {
-      return response.status(400).send({
-        error: 'INVALID_RESOURCE',
-        message: 'Request already sent',
-      })
+      return response.badRequest({ message: 'Request already sent' })
     }
 
     const friendRequest = await FriendRequest.create(ids)
+    const notifications = await receiver.related('notifications').query().first()
+
+    if (!notifications) {
+      return response.internalServerError({
+        message: 'Something went wrong, please try again later',
+      })
+    }
+
+    notifications.friendRequestsCount = notifications?.friendRequestsCount + 1
+    await notifications.save()
 
     const sockets = await redis.lrange(String(receiver.id), 0, -1)
     io.to(sockets).emit('friend-request:received', {
       ...friendRequest.serialize(),
       sender: user.serialize(),
     })
+
+    const { friendRequestsCount, privateChats } = notifications
+    io.to(sockets).emit('notification', {
+      friendRequestsCount,
+      privateChats: JSON.parse(privateChats),
+    })
+
     return { ...friendRequest.serialize(), receiver }
   }
 
-  async destroy({ auth, request }: HttpContext) {
-    const { params } = await request.validateUsing(destroyFriendRequestValidator)
-    const { userId } = params
-    console.log('userId: ', userId)
+  async destroy({ auth, request, response }: HttpContext) {
+    //? isSender refers to the user who is making the request
+    const { params, isSender = false } = await request.validateUsing(destroyFriendRequestValidator)
+    const { userId: userOneId } = params
 
     const userTwoId = auth.user!.id
-    const friendRequest = await FriendRequest.delete({ userOneId: userId, userTwoId })
+    const friendRequest = await FriendRequest.delete({ userOneId, userTwoId })
 
-    const sockets = await redis.lrange(String(userId), 0, -1)
+    const notifications = await Notification.findBy('userId', isSender ? userOneId : userTwoId)
+
+    if (!notifications) {
+      return response.internalServerError({
+        message: 'Something went wrong, please try again later',
+      })
+    }
+
+    notifications.friendRequestsCount = notifications?.friendRequestsCount - 1
+    await notifications.save()
+    const sockets = await redis.lrange(String(userOneId), 0, -1)
 
     io.to(sockets).emit('friend-request:removed', friendRequest?.id)
+
+    if (isSender) {
+      const { friendRequestsCount, privateChats } = notifications
+      io.to(sockets).emit('notification', {
+        friendRequestsCount,
+        privateChats: JSON.parse(privateChats),
+      })
+    }
   }
 }

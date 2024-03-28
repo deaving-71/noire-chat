@@ -35,12 +35,28 @@ export default class FriendsController {
     ])
 
     const sender = await User.find(senderId)
+    const notifications = await receiver.related('notifications').query().first()
 
-    const sockets = await redis.lrange(String(senderId), 0, -1)
+    if (!notifications) {
+      return response.internalServerError({
+        message: 'Something went wrong please try again later',
+      })
+    }
+    notifications.friendRequestsCount = notifications.friendRequestsCount - 1
+    await notifications.save()
 
-    io.to(sockets).emit('friend-request:accepted', {
-      user: receiver.serialize(),
+    const senderSockets = await redis.lrange(String(senderId), 0, -1)
+    const receiverSockets = await redis.lrange(String(receiverId), 0, -1)
+
+    io.to(senderSockets).emit('friend-request:accepted', {
+      newFriend: receiver.serialize(),
       requestId: freindRequest.id,
+    })
+
+    const { friendRequestsCount, privateChats } = notifications
+    io.to(receiverSockets).emit('notification', {
+      friendRequestsCount,
+      privateChats: JSON.parse(privateChats),
     })
 
     return sender

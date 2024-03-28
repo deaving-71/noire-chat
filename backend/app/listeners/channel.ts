@@ -13,25 +13,17 @@ export default function channelHandlers(io: Server, socket: Socket) {
 
   async function join(data: any) {
     try {
+      const userId = socket.data.user.id
       const slug = await slugValidator.validate(data)
 
-      const channel = await Channel.findBy('slug', slug)
-      if (!channel) {
-        socket.emit('error', 'Channel does not exist')
-        return
-      }
-
-      const userId = socket.data.user.id
       const user = await User.find(userId)
 
-      const isMember = await user!.related('channels').query().where({ id: channel.id }).first()
-
-      if (!isMember) {
-        socket.emit('error', 'You are not a member of this channel')
+      if (!user) {
+        socket.emit('error', 'You must be logged in to perform this action')
         return
       }
 
-      io.to(slug).emit('channel:user-connected', userId) // send user's id who went online to we can change their status in the member list
+      io.to(slug).emit('member-joined', user.serialize(), slug)
       socket.join(slug)
     } catch (err) {
       logger.error(err)
@@ -51,7 +43,6 @@ export default function channelHandlers(io: Server, socket: Socket) {
       }
 
       const _message = await channel.related('messages').create({ content, senderId })
-      logger.info(_message.$isPersisted)
       const _sender = await _message.related('sender').query().first()
       const message = _message.serialize()
       const sender = _sender?.serialize()

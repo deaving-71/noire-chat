@@ -1,4 +1,3 @@
-export * from "./sidebar"
 export * from "./header"
 export * from "./chat_message"
 export * from "./chat_input"

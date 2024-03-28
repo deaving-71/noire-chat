@@ -6,8 +6,8 @@ import { BaseModel, column, hasMany, hasOne, manyToMany } from '@adonisjs/lucid/
 import PrivateChatMessage from '#models/private_chat_message'
 import Channel from '#models/channel'
 import PrivateChat from '#models/private_chat'
+import Notification from '#models/notification'
 import type { HasMany, HasOne, ManyToMany } from '@adonisjs/lucid/types/relations'
-import Notification from './notification.js'
 import { DbRememberMeTokensProvider } from '@adonisjs/auth/session'
 
 const AuthFinder = withAuthFinder(() => hash.use('scrypt'), {
@@ -58,11 +58,8 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare friendsOf: ManyToMany<typeof User>
 
   @manyToMany(() => Channel, {
-    pivotTable: 'membership',
-    localKey: 'id',
-    pivotForeignKey: 'member_id',
-    relatedKey: 'id',
-    pivotRelatedForeignKey: 'channel_id',
+    pivotTable: 'channel_members',
+    pivotColumns: ['last_seen_messages'],
   })
   declare channels: ManyToMany<typeof Channel>
 
@@ -84,17 +81,13 @@ export default class User extends compose(BaseModel, AuthFinder) {
   static rememberMeTokens = DbRememberMeTokensProvider.forModel(User)
 
   static async getUser(userId: number) {
-    const user = await this.query()
-      .where('id', userId)
-      .preload('notifications')
-      .preload('channels')
-      .first()
+    const user = await this.query().where('id', userId).preload('channels').first()
 
-    const { notifications, channels, owned_channels, ...profile } = user?.serialize()!
+    const { channels, owned_channels, ...profile } = user?.serialize()!
+
     return {
       profile,
       channels,
-      notifications,
     }
   }
 

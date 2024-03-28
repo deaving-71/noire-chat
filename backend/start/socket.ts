@@ -14,6 +14,9 @@ ws.boot()
 
 export const io = ws.io
 
+/* 
+! a bug occurs when multiple sockets are connected
+*/
 io.use(authenticate)
 io.use(updateUserStatusMiddleware)
 io.use(joinChannels)
@@ -69,7 +72,7 @@ async function joinChannels(socket: Socket, next: NextMiddleware) {
     const slugs = channels.map((c) => c.slug)
 
     socket.join(slugs)
-    io.to(slugs).emit('member-connected', user.id)
+    io.to(slugs).emit('member-connected', user)
 
     next()
   } catch (error) {
@@ -88,6 +91,23 @@ async function updateUserStatus(userId: number, status: boolean) {
 
   user.isOnline = status
   await user.save()
+}
+
+async function leaveChannels(socket: Socket) {
+  try {
+    const userId = socket.data.user.id
+    const user = await User.find(userId)
+
+    if (!user) throw new Error('User not found')
+
+    const channels = await user.related('channels').query()
+
+    const slugs = channels.map((c) => c.slug)
+
+    io.to(slugs).emit('member-disconnected', user)
+  } catch (error) {
+    logger.error(error)
+  }
 }
 
 async function registerUserSocket(socket: Socket) {
@@ -123,6 +143,8 @@ async function broadcastUserStatus(
 
   const friends = await user!.related('friends').query().where('isOnline', true)
 
+  if (!friends.length) return
+
   const sockets: string[] = []
   for (let friend of friends) {
     const friendSockets = await redis.lrange(String(friend.id), 0, -1)
@@ -143,4 +165,5 @@ async function onDisconnection(socket: Socket) {
 
   await updateUserStatus(userId, false)
   broadcastUserStatus('friend-disconnected', socket)
+  leaveChannels(socket)
 }

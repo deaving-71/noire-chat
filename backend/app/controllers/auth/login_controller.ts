@@ -25,9 +25,7 @@ export default class LoginController {
     }
   }
 
-  async destroy({ auth, response }: HttpContext) {
+  async destroy({ auth }: HttpContext) {
     await auth.use('web').logout()
-
-    return response.redirect('unprotected')
   }
 }

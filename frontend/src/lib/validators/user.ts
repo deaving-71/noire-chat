@@ -1,6 +1,8 @@
 import { z } from "zod"
 
-export const UserValidator = z.object({
+import { channelValidator } from "./channel"
+
+export const userValidator = z.object({
   id: z.number(),
   username: z.string(),
   email: z.string(),
@@ -8,4 +10,19 @@ export const UserValidator = z.object({
   isOnline: z.boolean(),
   createdAt: z.string(),
   updatedAt: z.string(),
+})
+
+export const profileValidator = z.object({
+  profile: userValidator,
+  channels: z.array(
+    z.lazy(() =>
+      channelValidator
+        .omit({
+          owner: true,
+        })
+        .extend({
+          unreadMessages: z.number(),
+        })
+    )
+  ),
 })
