@@ -1,4 +1,10 @@
-import { MutationOptions, useMutation } from "@tanstack/react-query"
+import {
+  MutationOptions,
+  useMutation,
+  useQuery,
+  useSuspenseQuery,
+} from "@tanstack/react-query"
+import { z } from "zod"
 
 import { fetcher } from "@/lib/fetcher"
 
@@ -7,6 +13,10 @@ type Credentials = {
   password: string
   remember: boolean
 }
+
+const authCheckSchema = z.object({
+  isAuthenticated: z.boolean(),
+})
 
 export function useSignIn(opts?: MutationOptions<void, Error, Credentials>) {
   return useMutation({
@@ -23,10 +33,20 @@ export function useSignIn(opts?: MutationOptions<void, Error, Credentials>) {
 
 export function useSignOut(opts?: MutationOptions) {
   return useMutation({
-    mutationKey: ["auth", "sign_in"],
+    mutationKey: ["auth", "sign_out"],
     mutationFn: async () => {
       await fetcher("/auth/logout", { method: "DELETE" })
     },
     ...opts,
+  })
+}
+
+export function useCheckAuthentication() {
+  return useQuery({
+    queryKey: ["auth", "check"],
+    queryFn: async () => {
+      const result = await fetcher("/auth")
+      return authCheckSchema.parse(result)
+    },
   })
 }

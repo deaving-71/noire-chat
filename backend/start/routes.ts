@@ -12,6 +12,7 @@ import { middleware } from './kernel.js'
 
 const LoginController = () => import('#controllers/auth/login_controller')
 const RegisterController = () => import('#controllers/auth/register_controller')
+const VerifyAuthController = () => import('#controllers/auth/verify_auth_controller')
 const ProfileController = () => import('#controllers/profile_controller')
 const FriendsController = () => import('#controllers/friends_controller')
 const FriendRequestController = () => import('#controllers/friend_requests_controller')
@@ -48,7 +49,7 @@ router
         router.put('/channels/:id', [ChannelsController, 'update'])
         router.post('/channels', [ChannelsController, 'store'])
 
-        router.put('/memberships/:slug', [MembershipsController, 'update'])
+        router.put('/channel-member/:slug', [MembershipsController, 'update'])
 
         router.get('/notifications', [NotificationsController, 'show'])
         router.put('/notifications', [NotificationsController, 'update'])
@@ -66,9 +67,7 @@ router
       .group(() => {
         router.post('/register', [RegisterController, 'store'])
         router.post('/login', [LoginController, 'store'])
-        router.get('/', async ({ auth }) => {
-          return await auth.check()
-        })
+        router.get('/', [VerifyAuthController, 'show'])
       })
       .prefix('auth')
 

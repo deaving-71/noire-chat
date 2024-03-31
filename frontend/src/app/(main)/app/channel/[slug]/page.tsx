@@ -1,6 +1,6 @@
 import { Suspense } from "react"
 
-import { ChannelWrapper } from "@/components/channel/channel_wrapper"
+import { Chatbox, Members } from "@/components/channel"
 
 export default function ChannelPage({
   params: { slug },
@@ -10,7 +10,8 @@ export default function ChannelPage({
   return (
     <main className="grid grid-cols-[1fr,300px] divide-x divide-secondary/40 bg-secondary">
       <Suspense fallback={"Loading..."}>
-        <ChannelWrapper slug={slug} />
+        <Chatbox slug={slug} />
+        <Members slug={slug} />
       </Suspense>
     </main>
   )

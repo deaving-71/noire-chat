@@ -1,17 +1,13 @@
 import { Dispatch, SetStateAction } from "react"
+import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/socket"
 import { zodResolver } from "@hookform/resolvers/zod"
-import {
-  QueryObserverResult,
-  RefetchOptions,
-  useMutation,
-} from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { joinChannel } from "@/lib/actions/_client"
 import logger from "@/lib/logger"
-import { responseErrorValdiator } from "@/lib/validators/error"
+import { useJoinChannel } from "@/hooks/channel"
+import { useGetProfileQuery } from "@/hooks/profile"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -30,14 +26,12 @@ const formSchema = z.object({
 })
 
 export type ChannelFormAction = {
-  refetch: (
-    options?: RefetchOptions | undefined
-  ) => Promise<QueryObserverResult<any, Error>>
   setOpen: Dispatch<SetStateAction<boolean>>
 }
 
-export function JoinChannelForm({ refetch, setOpen }: ChannelFormAction) {
+export function JoinChannelForm({ setOpen }: ChannelFormAction) {
   const { ws } = useSocket()
+  const { refetch } = useGetProfileQuery()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -45,21 +39,23 @@ export function JoinChannelForm({ refetch, setOpen }: ChannelFormAction) {
     },
   })
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: joinChannel,
-    onSuccess: () => {
-      refetch()
-      ws?.socket.emit("channel:join-room", form.getValues("slug"))
+  const router = useRouter()
+  const { mutate: joinChannel, isPending } = useJoinChannel({
+    onSuccess: async () => {
+      await refetch()
+      const slug = form.getValues("slug")
+      ws?.socket.emit("channel:join-room", slug)
+      router.push(`/app/channel/${slug}`)
       setOpen(false)
     },
-    onError: (_error) => {
-      const error = responseErrorValdiator.parse(_error)
+    onError: (error) => {
       logger.error(error)
     },
   })
 
   function onSubmit({ slug }: z.infer<typeof formSchema>) {
-    mutate(slug)
+    if (isPending) return
+    joinChannel(slug)
   }
 
   return (
@@ -78,7 +74,7 @@ export function JoinChannelForm({ refetch, setOpen }: ChannelFormAction) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-28 font-medium">
+        <Button type="submit" className="w-28 font-medium" disabled={isPending}>
           {isPending ? <LoadingSpinner /> : "Join"}
         </Button>
       </form>

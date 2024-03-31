@@ -1,12 +1,13 @@
+import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/socket"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { createChannel } from "@/lib/actions/_client"
 import logger from "@/lib/logger"
 import { responseErrorValdiator } from "@/lib/validators/error"
+import { useCreateChannel } from "@/hooks/channel"
+import { useGetProfileQuery } from "@/hooks/profile"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -25,7 +26,7 @@ const formSchema = z.object({
   name: z.string().min(2, "Channel name must be at least 2 characters"),
 })
 
-export function CreateChannelForm({ refetch, setOpen }: ChannelFormAction) {
+export function CreateChannelForm({ setOpen }: ChannelFormAction) {
   const { ws } = useSocket()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -34,21 +35,23 @@ export function CreateChannelForm({ refetch, setOpen }: ChannelFormAction) {
     },
   })
 
-  const { mutate, isPending } = useMutation({
-    mutationFn: createChannel,
+  const router = useRouter()
+  const { refetch } = useGetProfileQuery()
+  const { mutate: createChannel, isPending } = useCreateChannel({
     onSuccess: async (channel) => {
       await refetch()
       ws?.socket.emit("channel:join-room", channel.slug)
+      router.push(`/app/channel/${channel.slug}`)
       setOpen(false)
     },
-    onError: (_error) => {
-      const error = responseErrorValdiator.parse(_error)
+    onError: (error) => {
       logger.error(error)
     },
   })
 
   function onSubmit({ name }: z.infer<typeof formSchema>) {
-    mutate(name)
+    if (isPending) return
+    createChannel(name)
   }
 
   return (
@@ -67,7 +70,7 @@ export function CreateChannelForm({ refetch, setOpen }: ChannelFormAction) {
             </FormItem>
           )}
         />
-        <Button type="submit" className="w-28 font-medium">
+        <Button type="submit" className="w-28 font-medium" disabled={isPending}>
           {isPending ? <LoadingSpinner /> : "Create"}
         </Button>
       </form>

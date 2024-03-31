@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { useCheckAuthentication } from "@/hooks/auth"
+
 import { Button } from "../ui/button"
 
 const navItems = [
@@ -22,6 +24,7 @@ const navItems = [
 
 export function Header() {
   const pathname = usePathname()
+  const { data } = useCheckAuthentication()
   return (
     <header className="pt-6">
       <nav className="mx-auto w-fit rounded-2xl border bg-accent p-1.5 text-sm">
@@ -43,7 +46,11 @@ export function Header() {
             variant="outline"
             asChild
           >
-            <Link href="/auth/sign-in">Sign in</Link>
+            {data?.isAuthenticated ? (
+              <Link href="/app">Open NoireChat</Link>
+            ) : (
+              <Link href="/auth/sign-in">Sign in</Link>
+            )}
           </Button>
         </ul>
       </nav>

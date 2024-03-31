@@ -24,7 +24,11 @@ export function Sidebar() {
   const { mutate: signOut } = useSignOut({
     onSuccess: () => {
       logger.info("logged out")
-      router.push("http://localhost:3000/")
+      router.push("/")
+    },
+    onError: (error) => {
+      logger.error("failed to log out")
+      logger.error(error)
     },
   })
 

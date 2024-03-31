@@ -11,14 +11,10 @@ export function useSendFriendRequest(
   return useMutation({
     mutationKey: ["friend_request", "send"],
     mutationFn: async (receiverUsername) => {
-      const response = await fetcher("/friend-requests", {
+      const result = await fetcher("/friend-requests", {
         method: "POST",
         body: { receiverUsername },
       })
-
-      const result = await response.json()
-
-      if (!response.ok) throw result
 
       return outgoingFriendRequest.parse(result)
     },
@@ -32,14 +28,10 @@ export function useAcceptFriendRequest(
   return useMutation({
     mutationKey: ["friend_request", "accept"],
     mutationFn: async (senderId) => {
-      const response = await fetcher("/friends", {
+      const result = await fetcher("/friends", {
         method: "POST",
         body: { senderId },
       })
-
-      const result = await response.json()
-
-      if (!response.ok) throw result
 
       return userValidator.parse(result)
     },

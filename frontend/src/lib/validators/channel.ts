@@ -17,8 +17,3 @@ export const channelValidator = z.object({
   owner: z.lazy(() => userValidator),
   createdAt: z.string(),
 })
-
-export const channelMembersValidator = z.object({
-  online: z.array(z.lazy(() => userValidator)),
-  offline: z.array(z.lazy(() => userValidator)),
-})

@@ -49,10 +49,8 @@ export default class ChannelsController {
     const { messages, members, ...channel } = _channel.serialize()
 
     const _members = members.filter((member: User) => member.id !== channel.owner.id)
-    const onlineMembers = _members.filter((m: User) => m.isOnline === true)
-    const offlineMembers = _members.filter((m: User) => m.isOnline === false)
 
-    return { channel, members: { online: onlineMembers, offline: offlineMembers }, messages }
+    return { channel, members: _members, messages }
   }
 
   async update({ auth, response, request }: HttpContext) {
@@ -68,10 +66,12 @@ export default class ChannelsController {
       })
     }
 
-    await user
+    const channel = await user
       .related('channels')
       .pivotQuery()
       .where('channel_id', id)
       .update({ last_seen_messages: DateTime.now().toISO() })
+
+    return channel
   }
 }

@@ -7,7 +7,7 @@ export function Header({ className, ...props }: HeaderProps) {
     <div
       {...props}
       className={cn(
-        "sticky top-0 z-10 flex h-16 items-center gap-2 border-b border-secondary/60 bg-background/40 px-4 text-primary saturate-150 backdrop-blur-lg",
+        "sticky top-0 z-10 flex h-16 items-center gap-[1ch] border-b border-secondary/60 bg-background/40 px-4 text-primary saturate-150 backdrop-blur-lg",
         className
       )}
     />

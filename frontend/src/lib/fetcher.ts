@@ -22,7 +22,6 @@ export async function fetcher(url: string, opts?: FetcherOptions) {
   }
 
   const response = await fetch(api(url), options)
-
   const result = await response.json()
 
   if (!response.ok) {

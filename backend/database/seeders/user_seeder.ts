@@ -20,6 +20,11 @@ export default class UserSeeder extends BaseSeeder {
         username: 'deaving',
         password: '12345678',
       },
+      {
+        email: 'aoi@gmail.com',
+        username: 'aoi',
+        password: '12345678',
+      },
     ])
     await Notification.createMany([
       {
@@ -32,6 +37,10 @@ export default class UserSeeder extends BaseSeeder {
       },
       {
         userId: 3,
+        privateChats: [],
+      },
+      {
+        userId: 4,
         privateChats: [],
       },
     ])

@@ -1,9 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { DateTime } from 'luxon'
 
 export default class ProfilesController {
   async show({ auth, response }: HttpContext) {
-    const user = auth.getUserOrFail()
+    const user = auth.user
 
     if (!user) {
       return response.unauthorized({ message: 'You must be logged in to perform this action' })
@@ -13,12 +12,12 @@ export default class ProfilesController {
       .related('channels')
       .query()
       .preload('messages', (messagesQuery) => {
-        messagesQuery.select(['created_at']).limit(100)
+        messagesQuery.select(['created_at', 'senderId']).limit(100)
       })
 
     const pivotTable = (await user.related('channels').pivotQuery()) as {
       channel_id: number
-      last_seen_messages: string | null
+      last_seen_messages: string
     }[]
 
     const channels = _channels.map((channel) => {
@@ -28,13 +27,14 @@ export default class ProfilesController {
       let unreadMessages = 0
 
       if (last_seen_messages) {
-        channel.messages.forEach((message) => {
+        for (let message of channel.messages) {
+          if (message.senderId === user.id) continue
+          console.log(message.senderId)
+          console.log(user.id)
           if (Date.parse(message.createdAt) > Date.parse(last_seen_messages)) {
             unreadMessages++
           }
-        })
-      } else {
-        unreadMessages = channel.messages.length
+        }
       }
 
       const channelJSON = channel.serialize()

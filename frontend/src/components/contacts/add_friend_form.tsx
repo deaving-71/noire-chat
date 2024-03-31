@@ -1,18 +1,14 @@
 "use client"
 
 import { Dispatch, SetStateAction } from "react"
-import { useFriendsContext } from "@/context/friends_context"
 import { FriendRequests, FriendsList } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { produce } from "immer"
+import { useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
 
-import { sendFriendRequest } from "@/lib/actions/_client"
 import { appendOutgoingFriendRequest } from "@/lib/actions/friend_requests"
 import logger from "@/lib/logger"
-import { responseErrorValdiator } from "@/lib/validators/error"
 import { useSendFriendRequest } from "@/hooks/friend_requests"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
@@ -53,8 +49,7 @@ export function AddFriendForm({ setOpen }: AddFriendFormProps) {
 
       setOpen(false)
     },
-    onError: (_error) => {
-      const error = responseErrorValdiator.parse(_error)
+    onError: (error) => {
       logger.error(error)
       form.setError("root", { message: error.message })
     },

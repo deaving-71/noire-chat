@@ -8,7 +8,7 @@ export default class extends BaseSchema {
       table.increments('id')
       table.string('username').notNullable().unique()
       table.string('email', 254).notNullable().unique()
-      table.string('avatar').defaultTo('default_avatar.png') //TODO: <<< migrate
+      table.string('avatar').defaultTo('default_avatar.jpg') //TODO: <<< migrate
       table.string('password').notNullable()
       table.boolean('is_online').defaultTo(false)
       table.boolean('status').defaultTo(true)

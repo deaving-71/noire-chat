@@ -80,7 +80,7 @@ function Avatar({
         {...props}
         {...dimensions}
         className={cn(
-          "aspect-square h-full w-full object-contain object-center",
+          "aspect-square h-full w-full object-contain object-center rounded-full",
           className
         )}
       />

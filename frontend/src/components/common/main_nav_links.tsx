@@ -13,7 +13,7 @@ export function MainNavLinks({}: MainNavLinksProps) {
     <ul className="space-y-1">
       <li>
         <NavLinkItem href="/app" className="justify-between">
-          <span className="flex items-center gap-2">
+          <span className="flex items-center gap-[1ch]">
             <Icons.inbox size={16} />
             Inbox
           </span>

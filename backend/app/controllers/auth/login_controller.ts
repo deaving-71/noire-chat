@@ -17,6 +17,7 @@ export default class LoginController {
       response.plainCookie('noirechat-userdata', stringify(user.serialize()), {
         httpOnly: true,
         encode: false,
+        maxAge: 1000 * 60 * 60 * 24 * 30,
       })
 
       return response.json(user)
@@ -27,5 +28,6 @@ export default class LoginController {
 
   async destroy({ auth }: HttpContext) {
     await auth.use('web').logout()
+    return { message: 'Signed out successfully' }
   }
 }
