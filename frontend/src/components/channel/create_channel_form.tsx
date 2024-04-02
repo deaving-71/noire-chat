@@ -2,6 +2,7 @@ import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/socket"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 import { z } from "zod"
 
 import logger from "@/lib/logger"
@@ -28,10 +29,11 @@ const formSchema = z.object({
 
 export function CreateChannelForm({ setOpen }: ChannelFormAction) {
   const { ws } = useSocket()
+  const { data: user } = useGetProfileQuery()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
+      name: `${user.profile.username}'s channel`,
     },
   })
 
@@ -42,10 +44,16 @@ export function CreateChannelForm({ setOpen }: ChannelFormAction) {
       await refetch()
       ws?.socket.emit("channel:join-room", channel.slug)
       router.push(`/app/channel/${channel.slug}`)
+      toast.success(`${channel.name} created`, { duration: 2000 })
       setOpen(false)
     },
     onError: (error) => {
-      logger.error(error)
+      errorHandler(error, (parsedError) => {
+        parsedError.errors.forEach((err) => {
+          const { field, message } = err
+          form.setError(field, { message })
+        })
+      })
     },
   })
 

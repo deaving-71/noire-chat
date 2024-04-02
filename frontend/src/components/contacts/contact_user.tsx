@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { User } from "@/types"
 
+import { errorHandler } from "@/lib/error_handler"
 import { useInitiatePrivateChat } from "@/hooks/private_chats"
 
 import { UserCard } from "../common"
@@ -16,6 +17,9 @@ export function ContactUser(user: ContactUserProps) {
   const { mutate: initiateChat } = useInitiatePrivateChat({
     onSuccess: (chatId) => {
       router.push(`/app/inbox/${chatId}`)
+    },
+    onError: (error) => {
+      errorHandler(error)
     },
   })
 

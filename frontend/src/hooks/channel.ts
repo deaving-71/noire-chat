@@ -2,6 +2,7 @@ import { Channel } from "@/types"
 import {
   MutationOptions,
   useMutation,
+  useQuery,
   useSuspenseQuery,
 } from "@tanstack/react-query"
 import { z } from "zod"
@@ -20,7 +21,7 @@ export const channelQueryDataSchema = z.object({
 })
 
 export function useGetChannelQuery(slug: string) {
-  return useSuspenseQuery({
+  return useQuery({
     queryKey: ["channel", slug],
     queryFn: async () => {
       const result = await fetcher(`/channels/${slug}`)

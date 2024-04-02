@@ -30,7 +30,7 @@ export default class ChannelsController {
     return channel
   }
 
-  async show({ request }: HttpContext) {
+  async show({ request, response }: HttpContext) {
     const { params } = await request.validateUsing(channelShowValidator)
     const { slug } = params
 
@@ -44,7 +44,9 @@ export default class ChannelsController {
       .preload('members')
       .first()
 
-    if (!_channel) throw new Error('Channel not found')
+    if (!_channel) {
+      return response.notFound({ message: 'Could not find this channel' })
+    }
 
     const { messages, members, ...channel } = _channel.serialize()
 
@@ -53,18 +55,11 @@ export default class ChannelsController {
     return { channel, members: _members, messages }
   }
 
-  async update({ auth, response, request }: HttpContext) {
-    const user = auth.user
+  async update({ auth, request }: HttpContext) {
+    const user = auth.user!
 
     const { params } = await request.validateUsing(channelUpdateValidator)
     const { id } = params
-
-    if (!user) {
-      return response.abort({
-        message: 'You must be logged in to perform this action',
-        status: 401,
-      })
-    }
 
     const channel = await user
       .related('channels')

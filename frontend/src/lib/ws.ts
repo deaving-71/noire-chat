@@ -19,7 +19,11 @@ export class Ws {
     })
   }
 
-  sendPrivateMessage(data: { receiverId: number; content: string }) {
+  sendPrivateMessage(data: {
+    receiverId: number
+    content: string
+    messageId: number
+  }) {
     this.socket.emit("private-chat:send-message", data)
   }
 

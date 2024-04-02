@@ -1,12 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class ProfilesController {
-  async show({ auth, response }: HttpContext) {
-    const user = auth.user
-
-    if (!user) {
-      return response.unauthorized({ message: 'You must be logged in to perform this action' })
-    }
+  async show({ auth }: HttpContext) {
+    const user = auth.user!
 
     const _channels = await user
       .related('channels')

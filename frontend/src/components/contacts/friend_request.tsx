@@ -5,6 +5,7 @@ import { FriendRequests, FriendsList, User } from "@/types"
 import { useQueryClient } from "@tanstack/react-query"
 
 import { appendFriend, popFriendRequest } from "@/lib/actions/friend_requests"
+import { errorHandler } from "@/lib/error_handler"
 import {
   useAcceptFriendRequest,
   useDeleteFriendRequest,
@@ -37,6 +38,9 @@ export function FriendRequest({ type, user, requestId }: ContactUserProps) {
             return appendFriend(updatedData, newFriend)
           })
       },
+      onError: (error) => {
+        errorHandler(error)
+      },
     })
 
   const { mutate: removeFriendRequest, isPending: isRemovalPending } =
@@ -52,6 +56,9 @@ export function FriendRequest({ type, user, requestId }: ContactUserProps) {
             ["friends"],
             popFriendRequest(baseData, requestId)
           )
+      },
+      onError: (error) => {
+        errorHandler(error)
       },
     })
 

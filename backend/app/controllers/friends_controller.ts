@@ -25,7 +25,6 @@ export default class FriendsController {
     const freindRequest = await FriendRequest.get({ receiverId, senderId })
     if (!freindRequest)
       return response.status(404).send({
-        error: 'NOT_FOUND',
         message: 'Friend request does not exist',
       })
 

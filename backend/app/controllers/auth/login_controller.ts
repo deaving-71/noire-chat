@@ -22,7 +22,9 @@ export default class LoginController {
 
       return response.json(user)
     } catch (error) {
-      return response.status(400).json({ root: 'Invalid email or password' })
+      return response.badRequest({
+        errors: [{ message: 'Invalid email or password', field: 'root', rule: 'invalid_form' }],
+      })
     }
   }
 

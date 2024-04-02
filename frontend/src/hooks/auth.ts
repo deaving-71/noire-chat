@@ -48,5 +48,6 @@ export function useCheckAuthentication() {
       const result = await fetcher("/auth")
       return authCheckSchema.parse(result)
     },
+    refetchInterval: 1000 * 60 * 13.8, //? set refetch interval earlier than the expiry duration of the session
   })
 }

@@ -1,4 +1,3 @@
-import Friend from '#models/friend'
 import PrivateChat from '#models/private_chat'
 import { privateChatMessageValidator } from '#validators/private_chat'
 import { Infer } from '@vinejs/vine/types'
@@ -12,16 +11,8 @@ export default function privateChatHandlers(io: Server, socket: Socket) {
 
   async function sendMessage(data: Infer<typeof privateChatMessageValidator>) {
     try {
-      const { content, receiverId } = await privateChatMessageValidator.validate(data)
+      const { content, receiverId, messageId } = await privateChatMessageValidator.validate(data)
       const senderId = socket.data.user.id
-      const areFriends = await Friend.areFriends({
-        receiverId: receiverId,
-        senderId: senderId,
-      })
-
-      if (!areFriends) {
-        return socket.emit('error', 'You are not friends with this user.')
-      }
 
       const message = await PrivateChat.sendMessage({ content, receiverId, senderId })
       const notifications = await Notification.findBy('userId', receiverId)
@@ -37,11 +28,14 @@ export default function privateChatHandlers(io: Server, socket: Socket) {
           await notifications.save()
 
           const { privateChats, friendRequestsCount } = notifications
-          io.to(receiverSockets).emit('notification', { privateChats: JSON.parse(privateChats), friendRequestsCount })
+          io.to(receiverSockets).emit('notification', {
+            privateChats: JSON.parse(privateChats),
+            friendRequestsCount,
+          })
         }
       }
 
-      io.to(sockets).emit('private-chat:message-received', message.serialize())
+      io.to(sockets).emit('private-chat:message-received', message.serialize(), messageId)
     } catch (error) {
       logger.error(error)
       socket.emit('error', error)

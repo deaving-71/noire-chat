@@ -2,14 +2,11 @@ import PrivateChat from '#models/private_chat'
 import User from '#models/user'
 import { receiverIdValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
+import { messages } from '@vinejs/vine/defaults'
 
 export default class PrivateChatsController {
   async index({ auth }: HttpContext) {
-    const userId = auth.user?.id
-
-    if (!userId) throw new Error('User not found')
-
-    const user = await User.find(userId)
+    const user = auth.user!
 
     const _sentPrivateChats = await user
       ?.related('sentPrivateChats')
@@ -63,14 +60,16 @@ export default class PrivateChatsController {
    * initiate a chat
    * @returns - the chat id
    */
-  async store({ auth, request }: HttpContext) {
-    const userId = auth.user?.id
-    if (!userId) throw new Error('User not found')
+  async store({ auth, request, response }: HttpContext) {
+    const userId = auth.user!.id
 
     const { receiverId } = await receiverIdValidator.validate(request.qs())
 
     // check if the user receiver exists
-    await User.findOrFail(receiverId)
+    const receiver = await User.find(receiverId)
+    if (receiver) {
+      return response.badRequest({ message: 'User does not exist' })
+    }
 
     const chat = await PrivateChat.getChat({ senderId: userId, receiverId })
 
@@ -78,12 +77,10 @@ export default class PrivateChatsController {
   }
 
   async show({ auth, request, response }: HttpContext) {
-    const userId = auth.user?.id
-
-    if (!userId) throw new Error('User not found')
+    const userId = auth.user!.id
 
     const id = request.param('id')
-    const chat = PrivateChat.query()
+    const chat = await PrivateChat.query()
       .where('id', id)
       .where('senderId', userId)
       .orWhere('receiverId', userId)
@@ -93,7 +90,7 @@ export default class PrivateChatsController {
       .first()
 
     if (!chat) {
-      return response.notFound({ message: 'This chat does not exist' })
+      return response.notFound({ message: 'The chat inbox you trying to access does not exist' })
     }
 
     return chat

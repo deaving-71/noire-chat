@@ -4,8 +4,10 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 import { z } from "zod"
 
+import { errorHandler } from "@/lib/error_handler"
 import logger from "@/lib/logger"
 import { useSignIn } from "@/hooks/auth"
 import { Button } from "@/components/ui/button"
@@ -20,7 +22,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { H1, LoadingSpinner } from "@/components/common"
+import { H1 } from "@/components/common"
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address."),
@@ -42,18 +44,16 @@ export default function LoginPage() {
 
   const { mutate: signIn, isPending } = useSignIn({
     onSuccess: () => {
+      toast.success("Successfully logged in", 2000)
       router.push("/app")
     },
     onError: (error) => {
-      logger.error(error)
-      if (
-        error &&
-        typeof error === "object" &&
-        "root" in error &&
-        typeof error.root === "string"
-      ) {
-        form.setError("root", { message: error.root })
-      }
+      errorHandler(error, (parsedError) => {
+        parsedError.errors.forEach((err) => {
+          const { field, message } = err
+          form.setError(field, { message })
+        })
+      })
     },
   })
 

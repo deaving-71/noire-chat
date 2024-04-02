@@ -4,11 +4,7 @@ import Notification from '#models/notification'
 
 export default class NotificationsController {
   async show({ auth, response }: HttpContext) {
-    const user = auth.user
-
-    if (!user) {
-      return response.unauthorized({ message: 'You must be logged in to perform this action' })
-    }
+    const user = auth.user!
 
     const notification = await user.related('notifications').query().first()
 
@@ -24,10 +20,7 @@ export default class NotificationsController {
   }
 
   async update({ auth, request, response }: HttpContext) {
-    const userId = auth.user?.id
-    if (!userId) {
-      return response.unauthorized({ message: 'You must be logged in to perform this action' })
-    }
+    const userId = auth.user!.id
 
     const { private_chat_id } = await request.validateUsing(updateNotificationValidator)
 

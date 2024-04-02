@@ -8,8 +8,8 @@ export const privateChatMessageValidator = z.object({
   senderId: z.number(),
   content: z.string(),
   sender: z.lazy(() => userValidator),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  status: z.enum(["pending", "sent"]).optional(),
+  createdAt: z.string().optional(),
 })
 
 export const privateChatValidator = z.object({
@@ -19,6 +19,15 @@ export const privateChatValidator = z.object({
   sender: z.lazy(() => userValidator),
   receiver: z.lazy(() => userValidator),
   createdAt: z.string(),
-  updatedAt: z.string(),
   messages: z.array(privateChatMessageValidator),
 })
+
+export const allPrivateChatsValidator = z.array(
+  privateChatValidator.omit({ messages: true }).extend({
+    last_message: privateChatMessageValidator.omit({
+      id: true,
+      privateChatId: true,
+      senderId: true,
+    }),
+  })
+)

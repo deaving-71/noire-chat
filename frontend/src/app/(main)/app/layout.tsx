@@ -2,13 +2,13 @@
 
 import { Suspense, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { Toaster } from "react-hot-toast"
 
 import { useCheckAuthentication } from "@/hooks/auth"
 import { LoadingSpinner, Sidebar } from "@/components/common"
 import { ChatAppProvider } from "@/components/providers/chat_app_provider"
 
 type AppLayoutProps = React.PropsWithChildren
-
 export default function AppLayout({ children }: AppLayoutProps) {
   const { data, isLoading, isSuccess } = useCheckAuthentication()
   const router = useRouter()
@@ -31,6 +31,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {children}
         </Suspense>
       </div>
+      <Toaster />
     </ChatAppProvider>
   )
 }

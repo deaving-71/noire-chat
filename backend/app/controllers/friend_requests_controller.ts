@@ -16,12 +16,16 @@ export default class FriendRequestsController {
 
     const user = auth.user!
     if (user.username === receiverUsername) {
-      return { message: 'Username seem to be incorrect, double check it please' }
+      return response.badRequest({
+        message: 'Username seem to be incorrect, double check it please',
+      })
     }
 
     const receiver = await User.query().where('username', receiverUsername).first()
     if (!receiver) {
-      return response.notFound({ message: 'Username seem to be incorrect, double check it please' })
+      return response.badRequest({
+        message: 'Username seem to be incorrect, double check it please',
+      })
     }
 
     const ids = { senderId: user.id, receiverId: receiver.id }
@@ -39,6 +43,7 @@ export default class FriendRequestsController {
     const friendRequest = await FriendRequest.create(ids)
     const notifications = await receiver.related('notifications').query().first()
 
+    /* //? every user has their own notication row created for them when they register */
     if (!notifications) {
       return response.internalServerError({
         message: 'Something went wrong, please try again later',

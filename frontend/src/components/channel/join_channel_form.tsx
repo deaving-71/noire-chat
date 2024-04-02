@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/socket"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 import { z } from "zod"
 
 import logger from "@/lib/logger"
@@ -46,10 +47,16 @@ export function JoinChannelForm({ setOpen }: ChannelFormAction) {
       const slug = form.getValues("slug")
       ws?.socket.emit("channel:join-room", slug)
       router.push(`/app/channel/${slug}`)
+      toast.success(`Joined ${channel.name}`, { duration: 2000 })
       setOpen(false)
     },
     onError: (error) => {
-      logger.error(error)
+      errorHandler(error, (parsedError) => {
+        parsedError.errors.forEach((err) => {
+          const { field, message } = err
+          form.setError(field, { message })
+        })
+      })
     },
   })
 

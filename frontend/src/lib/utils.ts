@@ -16,3 +16,7 @@ export function cn(...inputs: ClassValue[]) {
 export function since(date: Parameters<typeof dayjs>[0]) {
   return dayjs(date).fromNow()
 }
+
+export function generateRandomNumber() {
+  return Math.floor(Math.random() * 999999) + 1
+}
