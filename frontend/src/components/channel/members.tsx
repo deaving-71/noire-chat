@@ -17,10 +17,11 @@ type MembersProps = {
 
 export function Members({ slug }: MembersProps) {
   const { data } = useGetChannelQuery(slug)
-  const { channel, members } = data
   const { ws } = useSocket()
 
   useEffect(() => {
+    if (!data) return
+
     ws?.socket.on("member-joined", (member: User, channelSlug: string) => {
       if (data.channel.slug !== channelSlug) return
 
@@ -68,7 +69,11 @@ export function Members({ slug }: MembersProps) {
       ws?.socket.off("member-joined")
       ws?.socket.off("member-status-updated")
     }
-  }, [])
+  }, [data?.channel.id])
+
+  if (!data) return
+
+  const { channel, members } = data
 
   return (
     <Section className="sticky right-0 top-0 grid h-dvh">

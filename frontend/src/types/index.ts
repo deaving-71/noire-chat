@@ -1,7 +1,6 @@
 import { z } from "zod"
 
 import {
-  channelMembersValidator,
   channelMessageValidator,
   channelValidator,
 } from "@/lib/validators/channel"
@@ -39,7 +38,6 @@ export type PrivateChatHistory = Omit<PrivateChat, "messages"> & {
 
 export type Channel = z.infer<typeof channelValidator>
 export type ChannelMessage = z.infer<typeof channelMessageValidator>
-export type ChannelMembers = z.infer<typeof channelMembersValidator>
 
 export type Notifications = z.infer<typeof notificationsValidator>
 
@@ -55,4 +53,19 @@ export type Callback = (payload: CallbackPayload) => void
 export type Timestamp = {
   createdAt: string
   updatedAt: string
+}
+
+export type SiteConfig = {
+  name: string
+  author: string
+  description: string
+  keywords: Array<string>
+  url: {
+    base: string
+    author: string
+  }
+  links: {
+    github: string
+  }
+  ogImage: string
 }

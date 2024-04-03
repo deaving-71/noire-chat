@@ -1,5 +1,3 @@
-type LogOptions = (message?: any, ...optionalParams: any[]) => void
-
 class Logger {
   private debug = process.env.NEXT_PUBLIC_APP_DEBUG || false
 

@@ -73,8 +73,6 @@ export function Contacts() {
           friend_requests: FriendRequests
         }>(["friends"])
 
-        console.log(baseData)
-
         if (baseData) {
           queryClient.setQueryData(
             ["friends"],

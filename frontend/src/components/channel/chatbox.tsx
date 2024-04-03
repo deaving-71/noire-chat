@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/socket"
 import { ChannelMessage } from "@/types"
 import { useQueryClient } from "@tanstack/react-query"
@@ -12,6 +13,7 @@ import { useGetChannelQuery, useMarkAsRead } from "@/hooks/channel"
 import { useGetProfileQuery } from "@/hooks/profile"
 
 import { ChatInput, ChatMessage, Header, Section } from "../chat_app"
+import { ChatboxSkeleton, P } from "../common"
 import { Icons } from "../icons"
 
 export type ChatboxProps = {
@@ -19,19 +21,17 @@ export type ChatboxProps = {
 }
 
 export function Chatbox({ slug }: ChatboxProps) {
-  const { data } = useGetChannelQuery(slug)
-  const { channel, messages } = data
+  const { data, isLoading, error, isError } = useGetChannelQuery(slug)
+
   const queryClient = useQueryClient()
+  const router = useRouter()
 
   const { data: user, refetch: refetchProfile } = useGetProfileQuery()
   const { channels } = user
 
-  const currentChannel = channels?.find((ch) => ch.id === channel.id)
-
   const { mutate } = useMarkAsRead({
     onSuccess: () => {
-      const lastMessage = messages.at(-1)
-      console.log("lastMessage: ", lastMessage)
+      const lastMessage = data?.messages.at(-1)
 
       if (lastMessage?.sender.id === user.profile.id) return
       refetchProfile()
@@ -45,9 +45,13 @@ export function Chatbox({ slug }: ChatboxProps) {
   const { ws } = useSocket()
 
   function markAsRead() {
+    if (!data) return
+
+    const currentChannel = channels?.find((ch) => ch.id === data?.channel.id)
+
     if (!currentChannel || currentChannel.unreadMessages <= 0) return
 
-    mutate(channel.id)
+    mutate(data.channel.id)
   }
 
   function sendMessage(content: string) {
@@ -55,10 +59,12 @@ export function Chatbox({ slug }: ChatboxProps) {
   }
 
   useEffect(() => {
+    if (!data) return
+
     markAsRead()
 
     ws?.socket.on("channel:message-received", (message: ChannelMessage) => {
-      if (message.channelId !== channel.id) return
+      if (message.channelId !== data.channel.id) return
       const baseData = queryClient.getQueryData<typeof data>(["channel", slug])
       if (!baseData) return
 
@@ -76,7 +82,24 @@ export function Chatbox({ slug }: ChatboxProps) {
       ws?.socket.off("channel:message-received")
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [data?.channel.id])
+
+  useEffect(() => {
+    if (isError) {
+      logger.error(error)
+      router.push("/app")
+    }
+  }, [isError])
+
+  if (isLoading) {
+    return <ChatboxSkeleton />
+  }
+
+  if (!data && error) {
+    return <p>Error...</p>
+  }
+
+  const { channel, messages } = data!
 
   return (
     <Section className="grid h-dvh grid-rows-[1fr,52px]">

@@ -2,6 +2,7 @@ import PrivateChat from '#models/private_chat'
 import User from '#models/user'
 import { receiverIdValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
+import vine from '@vinejs/vine'
 import { messages } from '@vinejs/vine/defaults'
 
 export default class PrivateChatsController {
@@ -50,7 +51,6 @@ export default class PrivateChatsController {
       return { ...rest, last_message }
     })
 
-    //@ts-ignore //! TypeScript bug
     const private_chats = [...sentPrivateChats, ...receivedPrivateChats]
 
     return private_chats
@@ -67,7 +67,7 @@ export default class PrivateChatsController {
 
     // check if the user receiver exists
     const receiver = await User.find(receiverId)
-    if (receiver) {
+    if (!receiver) {
       return response.badRequest({ message: 'User does not exist' })
     }
 
@@ -79,11 +79,16 @@ export default class PrivateChatsController {
   async show({ auth, request, response }: HttpContext) {
     const userId = auth.user!.id
 
-    const id = request.param('id')
+    const { params } = await request.validateUsing(
+      vine.compile(vine.object({ params: vine.object({ id: vine.number() }) }))
+    )
+    const { id } = params
+
     const chat = await PrivateChat.query()
       .where('id', id)
-      .where('senderId', userId)
-      .orWhere('receiverId', userId)
+      .andWhere(function (query) {
+        query.where('senderId', userId).orWhere('receiverId', userId)
+      })
       .preload('sender')
       .preload('receiver')
       .preload('messages', (messagesQuery) => messagesQuery.preload('sender'))

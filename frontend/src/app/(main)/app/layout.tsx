@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Toaster } from "react-hot-toast"
 
 import { useCheckAuthentication } from "@/hooks/auth"
-import { LoadingSpinner, Sidebar } from "@/components/common"
+import { MainLoader, Sidebar } from "@/components/common"
 import { ChatAppProvider } from "@/components/providers/chat_app_provider"
 
 type AppLayoutProps = React.PropsWithChildren
@@ -20,16 +20,16 @@ export default function AppLayout({ children }: AppLayoutProps) {
   }, [isSuccess])
 
   if (isLoading || !data?.isAuthenticated) {
-    return <LoadingSpinner />
+    return <MainLoader />
   }
 
   return (
     <ChatAppProvider>
       <div className="relative grid grid-cols-[240px,1fr] grid-rows-1 text-md">
-        <Suspense fallback={"Loading..."}>
+        <Suspense fallback={"Loading Sidebar..."}>
           <Sidebar />
-          {children}
         </Suspense>
+        {children}
       </div>
       <Toaster />
     </ChatAppProvider>

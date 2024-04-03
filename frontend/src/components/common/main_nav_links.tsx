@@ -1,7 +1,7 @@
 import { useGetNotificationsQuery } from "@/hooks/notifications"
 
 import { Icons } from "../icons"
-import { NavLinkItem } from "./NavLinkItem"
+import { NavLinkItem } from "./nav_link_item"
 import { NotificationCount } from "./notification_count"
 
 type MainNavLinksProps = {}

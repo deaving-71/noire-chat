@@ -20,6 +20,7 @@ import { useGetPrivateChatQuery } from "@/hooks/private_chats"
 import { useGetProfileQuery } from "@/hooks/profile"
 import { ChatInput, ChatMessage, Header, Section } from "@/components/chat_app/"
 
+import { ChatboxSkeleton } from "../common"
 import { Icons } from "../icons"
 
 type ChatBoxProps = { id: string }
@@ -154,7 +155,7 @@ export function ChatBox({ id }: ChatBoxProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error])
 
-  if (isLoading) return <p>Loading...</p>
+  if (isLoading) return <ChatboxSkeleton />
 
   if (error) {
     return null

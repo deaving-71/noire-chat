@@ -25,8 +25,6 @@ export default class ProfilesController {
       if (last_seen_messages) {
         for (let message of channel.messages) {
           if (message.senderId === user.id) continue
-          console.log(message.senderId)
-          console.log(user.id)
           if (Date.parse(message.createdAt) > Date.parse(last_seen_messages)) {
             unreadMessages++
           }
