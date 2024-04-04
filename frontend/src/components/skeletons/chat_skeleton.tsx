@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils"
 import { Header, Section } from "../chat_app"
 import { Skeleton } from "../ui/skeleton"
 
-export function ChatboxSkeleton() {
+export function ChatSkeleton() {
   return (
     <Section>
       <Header>

@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "pnpm prettier ./src --write",
-    "format:check": "pnpm prettier ./src --check"
+    "format": "npm prettier ./src --write",
+    "format:check": "npm prettier ./src --check"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -29,7 +29,7 @@
     "immer": "^10.0.4",
     "lottie-react": "^2.4.0",
     "lucide-react": "^0.330.0",
-    "next": "14.1.0",
+    "next": "^14.1.4",
     "next-themes": "^0.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

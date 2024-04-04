@@ -12,13 +12,13 @@ export const env = createEnv({
       .transform((v) => v === "true"),
   },
   server: {
-    NODE_ENV: z.enum(["development", "prod", "test"]),
+    APP_ENV: z.enum(["dev", "prod", "test"]),
   },
   runtimeEnv: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_DEBUG: process.env.NEXT_PUBLIC_APP_DEBUG,
     NEXT_PUBLIC_API_VERSION: process.env.NEXT_PUBLIC_API_VERSION,
-    NODE_ENV: process.env.NODE_ENV,
+    APP_ENV: process.env.APP_ENV,
   },
 })

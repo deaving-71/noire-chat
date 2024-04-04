@@ -44,13 +44,14 @@ export default function LoginPage() {
 
   const { mutate: signIn, isPending } = useSignIn({
     onSuccess: () => {
-      toast.success("Successfully logged in", 2000)
+      toast.success("Successfully logged in", { duration: 2000 })
       router.push("/app")
     },
     onError: (error) => {
       errorHandler(error, (parsedError) => {
         parsedError.errors.forEach((err) => {
           const { field, message } = err
+          // @ts-ignore
           form.setError(field, { message })
         })
       })

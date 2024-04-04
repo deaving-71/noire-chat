@@ -10,13 +10,14 @@ import { useGetChannelQuery } from "@/hooks/channel"
 import { Header, Section } from "../chat_app"
 import { UserCard } from "../common"
 import { queryClient } from "../providers/global_provider"
+import { ListSkeleton } from "../skeletons"
 
 type MembersProps = {
   slug: string
 }
 
 export function Members({ slug }: MembersProps) {
-  const { data } = useGetChannelQuery(slug)
+  const { data, isLoading, error } = useGetChannelQuery(slug)
   const { ws } = useSocket()
 
   useEffect(() => {
@@ -71,7 +72,11 @@ export function Members({ slug }: MembersProps) {
     }
   }, [data?.channel.id])
 
-  if (!data) return
+  if (isLoading) {
+    return <ListSkeleton />
+  }
+
+  if (error || !data) return
 
   const { channel, members } = data
 

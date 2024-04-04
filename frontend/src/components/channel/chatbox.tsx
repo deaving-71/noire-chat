@@ -13,8 +13,8 @@ import { useGetChannelQuery, useMarkAsRead } from "@/hooks/channel"
 import { useGetProfileQuery } from "@/hooks/profile"
 
 import { ChatInput, ChatMessage, Header, Section } from "../chat_app"
-import { ChatboxSkeleton, P } from "../common"
 import { Icons } from "../icons"
+import { ChatSkeleton } from "../skeletons"
 
 export type ChatboxProps = {
   slug: string
@@ -92,12 +92,10 @@ export function Chatbox({ slug }: ChatboxProps) {
   }, [isError])
 
   if (isLoading) {
-    return <ChatboxSkeleton />
+    return <ChatSkeleton />
   }
 
-  if (!data && error) {
-    return <p>Error...</p>
-  }
+  if (error || !data) return
 
   const { channel, messages } = data!
 

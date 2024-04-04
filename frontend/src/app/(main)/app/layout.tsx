@@ -25,12 +25,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <ChatAppProvider>
-      <div className="relative grid grid-cols-[240px,1fr] grid-rows-1 text-md">
-        <Suspense fallback={"Loading Sidebar..."}>
+      <Suspense fallback={<MainLoader />}>
+        <div className="relative grid grid-cols-[240px,1fr] grid-rows-1 text-md">
           <Sidebar />
-        </Suspense>
-        {children}
-      </div>
+          {children}
+        </div>
+      </Suspense>
       <Toaster />
     </ChatAppProvider>
   )

@@ -15,3 +15,8 @@ export const outgoingFriendRequest = z.object({
   receiverId: z.number(),
   receiver: userValidator,
 })
+
+export const friendsRequestsValidator = z.object({
+    incoming: z.array(incomingFriendRequest),
+    outgoing: z.array(outgoingFriendRequest),
+})

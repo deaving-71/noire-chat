@@ -1,3 +1,5 @@
+"use client"
+
 import { Dispatch, SetStateAction } from "react"
 import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/socket"
@@ -6,6 +8,7 @@ import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 
+import { errorHandler } from "@/lib/error_handler"
 import logger from "@/lib/logger"
 import { useJoinChannel } from "@/hooks/channel"
 import { useGetProfileQuery } from "@/hooks/profile"
@@ -42,18 +45,19 @@ export function JoinChannelForm({ setOpen }: ChannelFormAction) {
 
   const router = useRouter()
   const { mutate: joinChannel, isPending } = useJoinChannel({
-    onSuccess: async () => {
+    onSuccess: async (channel) => {
       await refetch()
       const slug = form.getValues("slug")
       ws?.socket.emit("channel:join-room", slug)
-      router.push(`/app/channel/${slug}`)
       toast.success(`Joined ${channel.name}`, { duration: 2000 })
       setOpen(false)
+      router.push(`/app/channel/${slug}`)
     },
     onError: (error) => {
       errorHandler(error, (parsedError) => {
         parsedError.errors.forEach((err) => {
           const { field, message } = err
+          //@ts-ignore
           form.setError(field, { message })
         })
       })

@@ -1,3 +1,5 @@
+"use client"
+
 import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/socket"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -5,8 +7,7 @@ import { useForm } from "react-hook-form"
 import toast from "react-hot-toast"
 import { z } from "zod"
 
-import logger from "@/lib/logger"
-import { responseErrorValdiator } from "@/lib/validators/error"
+import { errorHandler } from "@/lib/error_handler"
 import { useCreateChannel } from "@/hooks/channel"
 import { useGetProfileQuery } from "@/hooks/profile"
 import { Button } from "@/components/ui/button"
@@ -51,6 +52,7 @@ export function CreateChannelForm({ setOpen }: ChannelFormAction) {
       errorHandler(error, (parsedError) => {
         parsedError.errors.forEach((err) => {
           const { field, message } = err
+          // @ts-ignore
           form.setError(field, { message })
         })
       })
