@@ -42,7 +42,7 @@ export default class FriendsController {
       })
     }
     notifications.friendRequestsCount = notifications.friendRequestsCount - 1
-    await notifications.save()
+    const newNotifications = await notifications.save()
 
     const senderSockets = await redis.lrange(String(senderId), 0, -1)
     const receiverSockets = await redis.lrange(String(receiverId), 0, -1)
@@ -52,10 +52,10 @@ export default class FriendsController {
       requestId: freindRequest.id,
     })
 
-    const { friendRequestsCount, privateChats } = notifications
+    const { friendRequestsCount, privateChats } = newNotifications
     io.to(receiverSockets).emit('notification', {
       friendRequestsCount,
-      privateChats: JSON.parse(privateChats),
+      privateChats,
     })
 
     return sender

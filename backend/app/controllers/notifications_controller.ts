@@ -31,18 +31,19 @@ export default class NotificationsController {
       })
     }
 
-    const notificationsJSON = notifications.serialize()
+    if (!notifications.privateChats.includes(private_chat_id)) {
+      const { privateChats, friendRequestsCount } = notifications
+      return { privateChats, friendRequestsCount }
+    }
 
-    if (!notificationsJSON.privateChats.includes(private_chat_id)) return
-
-    notifications.privateChats = notificationsJSON.privateChats.filter(
+    notifications.privateChats = notifications.privateChats.filter(
       (id: number) => id !== private_chat_id
     )
 
-    await notifications.save()
+    const newNotifications = await notifications.save()
 
-    const { privateChats, friendRequestsCount } = notifications
+    const { privateChats, friendRequestsCount } = newNotifications
 
-    return { privateChats: JSON.parse(privateChats), friendRequestsCount }
+    return { privateChats, friendRequestsCount }
   }
 }

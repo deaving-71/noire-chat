@@ -1,59 +1,38 @@
 import PrivateChat from '#models/private_chat'
+import PrivateChatMessage from '#models/private_chat_message'
 import User from '#models/user'
 import { receiverIdValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
 import vine from '@vinejs/vine'
-import { messages } from '@vinejs/vine/defaults'
 
 export default class PrivateChatsController {
   async index({ auth }: HttpContext) {
     const user = auth.user!
 
-    const _sentPrivateChats = await user
-      ?.related('sentPrivateChats')
-      .query()
+    const _privateChats = await PrivateChat.query()
+      .where('receiverId', user.id)
+      .orWhere('senderId', user.id)
       .has('messages')
-      .preload('receiver')
       .preload('sender')
+      .preload('receiver')
       .preload('messages', (messagesQuery) => {
-        messagesQuery.orderBy('id', 'desc').preload('sender').first()
+        messagesQuery.preload('sender').orderBy('id', 'desc')
       })
 
-    const _receivedPrivateChats = await user
-      ?.related('receivedPrivateChats')
-      .query()
-      .has('messages')
-      .preload('receiver')
-      .preload('sender')
-      .preload('messages', (messagesQuery) => {
-        messagesQuery.orderBy('id', 'desc').preload('sender').first()
+    //@ts-ignore
+    const privateChats: (Omit<PrivateChat, 'messages'> & { last_message: PrivateChatMessage })[] =
+      _privateChats?.map((chat) => {
+        const { messages, ...rest } = chat.toJSON()
+
+        const last_message = messages.at(0)
+        return { ...rest, last_message }
       })
 
-    const sentPrivateChats = _sentPrivateChats?.map((chat) => {
-      const { messages, ...rest } = chat.serialize()
-      const last_message = {
-        content: chat.messages[0].content,
-        createdAt: chat.messages[0].createdAt,
-        sender: chat.messages[0].sender,
-      }
+    privateChats.sort(
+      (a, b) => b.last_message.createdAt.toSeconds() - a.last_message.createdAt.toSeconds()
+    )
 
-      return { ...rest, last_message }
-    })
-
-    const receivedPrivateChats = _receivedPrivateChats?.map((chat) => {
-      const { messages, ...rest } = chat.serialize()
-      const last_message = {
-        content: chat.messages[0].content,
-        createdAt: chat.messages[0].createdAt,
-        sender: chat.messages[0].sender,
-      }
-
-      return { ...rest, last_message }
-    })
-
-    const private_chats = [...sentPrivateChats, ...receivedPrivateChats]
-
-    return private_chats
+    return privateChats
   }
 
   /**

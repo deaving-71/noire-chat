@@ -1,7 +1,15 @@
 import { useState } from "react"
 import Link from "next/link"
+import toast from "react-hot-toast"
 
 import { useGetProfileQuery } from "@/hooks/profile"
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -18,7 +26,7 @@ import { NotificationCount } from "./notification_count"
 
 export function UserChannels() {
   const [open, setOpen] = useState(false)
-  const { data: user, refetch } = useGetProfileQuery()
+  const { data: user } = useGetProfileQuery()
 
   return (
     <div className="grid grid-rows-[auto,calc(100dvh-280px)] space-y-2">
@@ -54,18 +62,39 @@ export function UserChannels() {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     {/* //TODO: fix props from the asChild comp to be passed correctly */}
-                    <Link
-                      href={`/app/channel/${channel.slug}`}
-                      className="grid grid-cols-[1fr,auto] gap-2 rounded-md px-3 py-1 hover:bg-muted aria-[current=true]:text-primary"
-                    >
-                      <div className="flex items-center gap-[1ch]">
-                        <Icons.hashtag size={14} />
-                        <span className="block truncate">{channel.name}</span>
-                      </div>
-                      {channel.unreadMessages !== 0 && (
-                        <NotificationCount count={channel.unreadMessages} />
-                      )}
-                    </Link>
+                    <ContextMenu>
+                      <ContextMenuTrigger>
+                        <Link
+                          href={`/app/channel/${channel.slug}`}
+                          className="grid grid-cols-[1fr,auto] gap-2 rounded-md px-3 py-1 hover:bg-muted aria-[current=true]:text-primary"
+                        >
+                          <div className="flex items-center gap-[1ch]">
+                            <Icons.hashtag size={14} />
+                            <span className="block truncate">
+                              {channel.name}
+                            </span>
+                          </div>
+                          {channel.unreadMessages !== 0 && (
+                            <NotificationCount count={channel.unreadMessages} />
+                          )}
+                        </Link>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="w-[200px]">
+                        <ContextMenuItem
+                          inset
+                          className="px-2"
+                          onClick={() => {
+                            navigator.clipboard.writeText(channel.slug)
+                            toast.success("Coppied to clipboard")
+                          }}
+                        >
+                          Copy Channel ID
+                          <ContextMenuShortcut>
+                            <Icons.copy size={20} />
+                          </ContextMenuShortcut>
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
                   </TooltipTrigger>
                   <TooltipContent side="right" className="z-20 bg-background">
                     <p>{channel.name}</p>

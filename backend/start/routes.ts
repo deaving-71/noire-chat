@@ -53,6 +53,18 @@ router
 
         router.get('/notifications', [NotificationsController, 'show'])
         router.put('/notifications', [NotificationsController, 'update'])
+        router.get('/test', async ({ auth }) => {
+          const notifications = await auth.user!.related('notifications').query().first()
+
+          return notifications
+        })
+
+        router.post('/test', async ({ auth }) => {
+          const notifications = await auth.user!.related('notifications').query().first()
+          notifications?.privateChats.push(1, 2)
+          const savedNotifications = await notifications?.save()
+          return savedNotifications
+        })
 
         router.delete('/auth/logout', [LoginController, 'destroy'])
       })

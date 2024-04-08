@@ -1,3 +1,5 @@
+import logger from "./logger"
+
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 type FetcherOptions = Omit<RequestInit, "body"> & {
@@ -22,7 +24,23 @@ export async function fetcher(url: string, opts?: FetcherOptions) {
   }
 
   const response = await fetch(api(url), options)
-  const result = await response.json()
+
+  let result
+
+  const contentType = response.headers.get("Content-Type")
+  switch (contentType) {
+    case "application/json; charset=utf-8":
+      result = await response.json()
+      break
+
+    case "text/plain; charset=utf-8":
+      result = await response.text()
+      break
+
+    default:
+      result = null
+      break
+  }
 
   if (!response.ok) {
     if (
@@ -31,7 +49,7 @@ export async function fetcher(url: string, opts?: FetcherOptions) {
     )
       throw result
 
-    throw "Internal server error"
+    throw result
   }
 
   return result

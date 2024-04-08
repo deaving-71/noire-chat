@@ -1,6 +1,6 @@
 {
-  "name": "noire-chat",
-  "version": "0.1.0",
+  "name": "api_server",
+  "version": "0.0.0",
   "private": true,
   "type": "module",
   "license": "UNLICENSED",
@@ -27,8 +27,9 @@
     "#policies/*": "./app/policies/*.js",
     "#abilities/*": "./app/abilities/*.js",
     "#database/*": "./database/*.js",
-    "#tests/*": "./tests/*.js",
     "#start/*": "./start/*.js",
+    "#types/*": "./types/*.js",
+    "#tests/*": "./tests/*.js",
     "#config/*": "./config/*.js"
   },
   "devDependencies": {
@@ -36,19 +37,18 @@
     "@adonisjs/eslint-config": "^1.2.1",
     "@adonisjs/prettier-config": "^1.2.1",
     "@adonisjs/tsconfig": "^1.2.1",
+    "@japa/api-client": "^2.0.2",
     "@japa/assert": "^2.1.0",
     "@japa/plugin-adonisjs": "^3.0.0",
     "@japa/runner": "^3.1.1",
     "@swc/core": "^1.3.107",
-    "@types/cookie": "^0.6.0",
     "@types/luxon": "^3.4.2",
     "@types/node": "^20.11.10",
     "eslint": "^8.56.0",
     "pino-pretty": "^10.3.1",
     "prettier": "^3.2.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.3.3",
-    "vite": "^5.0.12"
+    "typescript": "^5.4.3"
   },
   "dependencies": {
     "@adonisjs/auth": "^9.1.1",
@@ -56,17 +56,12 @@
     "@adonisjs/cors": "^2.2.1",
     "@adonisjs/lucid": "^20.1.0",
     "@adonisjs/redis": "^8.0.1",
-    "@adonisjs/session": "^7.1.1",
-    "@adonisjs/shield": "^8.1.0",
-    "@adonisjs/static": "^1.1.1",
-    "@adonisjs/vite": "^2.0.2",
+    "@adonisjs/session": "^7.3.0",
     "@vinejs/vine": "^1.7.1",
-    "better-sqlite3": "^9.4.0",
-    "cookie": "^0.6.0",
     "luxon": "^3.4.4",
-    "pg": "^8.11.3",
+    "pg": "^8.11.5",
     "reflect-metadata": "^0.2.1",
-    "socket.io": "^4.7.4"
+    "socket.io": "^4.7.5"
   },
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/app"

@@ -9,14 +9,17 @@ import { produce } from "immer"
 import ScrollToBottom from "react-scroll-to-bottom"
 import { z } from "zod"
 
-import logger from "@/lib/logger"
+import { errorHandler } from "@/lib/error_handler"
 import { generateRandomNumber } from "@/lib/utils"
 import { allPrivateChatsValidator } from "@/lib/validators/private-chat"
 import {
   useGetNotificationsQuery,
   useUpdateNotificationsMutation,
 } from "@/hooks/notifications"
-import { useGetPrivateChatQuery } from "@/hooks/private_chats"
+import {
+  useGetAllPrivateChats,
+  useGetPrivateChatQuery,
+} from "@/hooks/private_chats"
 import { useGetProfileQuery } from "@/hooks/profile"
 import { ChatInput, ChatMessage, Header, Section } from "@/components/chat_app/"
 
@@ -32,10 +35,13 @@ export function ChatBox({ id }: ChatBoxProps) {
   const { data: chat, isLoading, error } = useGetPrivateChatQuery(id)
   const { data: user } = useGetProfileQuery()
   const { data: notifications } = useGetNotificationsQuery()
-
+  const { refetch: refetchPrivateChats } = useGetAllPrivateChats()
   const { mutate: updateNotifications } = useUpdateNotificationsMutation({
     onSuccess: (data) => {
       queryClient.setQueryData<Notifications>(["notifications"], data)
+    },
+    onError: (error) => {
+      errorHandler(error)
     },
   })
   const { ws } = useSocket()
@@ -49,7 +55,7 @@ export function ChatBox({ id }: ChatBoxProps) {
   const markMessageAsRead = useCallback(() => {
     if (chat && notifications.privateChats.includes(chat.id))
       updateNotifications(chat.id)
-  }, [chat?.id])
+  }, [chat?.id, notifications.privateChats])
 
   const sendMessage = useCallback(
     (content: string) => {
@@ -83,6 +89,10 @@ export function ChatBox({ id }: ChatBoxProps) {
           draft.messages.push(message)
         })
       )
+
+      if (chat.messages.length === 1) {
+        refetchPrivateChats()
+      }
     },
     [chat?.id]
   )
@@ -151,15 +161,17 @@ export function ChatBox({ id }: ChatBoxProps) {
   }, [chat?.id])
 
   useEffect(() => {
+    if (chat?.messages.length === 1) refetchPrivateChats()
+  }, [chat?.messages.length])
+
+  useEffect(() => {
     if (error) router.push("/app")
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [error])
 
   if (isLoading) return <ChatSkeleton />
 
-  if (error) {
-    return null
-  }
+  if (error) return null
 
   return (
     <Section className="grid h-dvh grid-rows-[1fr,52px]">

@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react"
 
 import logger from "@/lib/logger"
 import { Ws } from "@/lib/ws"
+import { MainLoader } from "@/components/common"
 
 type SocketContext = {
   ws: Ws | null
@@ -52,7 +53,7 @@ function SocketContextProvider({ children }: SocketContextProviderProps) {
 
   return (
     <socketContext.Provider value={{ ws, isConnected }}>
-      {children}
+      {isConnected ? children : <MainLoader />}
     </socketContext.Provider>
   )
 }

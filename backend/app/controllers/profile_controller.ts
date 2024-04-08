@@ -1,4 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
+import { DateTime } from 'luxon'
 
 export default class ProfilesController {
   async show({ auth }: HttpContext) {
@@ -21,11 +22,10 @@ export default class ProfilesController {
         pivotTable.find((pivot) => pivot.channel_id === channel.id) || {}
 
       let unreadMessages = 0
-
       if (last_seen_messages) {
         for (let message of channel.messages) {
           if (message.senderId === user.id) continue
-          if (Date.parse(message.createdAt) > Date.parse(last_seen_messages)) {
+          if (Date.parse(message.createdAt.toISO()!) > Date.parse(last_seen_messages)) {
             unreadMessages++
           }
         }

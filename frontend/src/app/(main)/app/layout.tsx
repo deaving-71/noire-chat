@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Toaster } from "react-hot-toast"
 
 import { useCheckAuthentication } from "@/hooks/auth"
 import { MainLoader, Sidebar } from "@/components/common"
@@ -31,7 +30,6 @@ export default function AppLayout({ children }: AppLayoutProps) {
           {children}
         </div>
       </Suspense>
-      <Toaster />
     </ChatAppProvider>
   )
 }

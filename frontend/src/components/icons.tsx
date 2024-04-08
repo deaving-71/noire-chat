@@ -1,9 +1,11 @@
 import {
   Check,
   Command,
+  Copy,
   Github,
   Hash,
   Inbox,
+  Info,
   Loader2,
   LogOut,
   MessageSquare,
@@ -39,6 +41,8 @@ const icons = {
   github: Github,
   settings: Settings,
   logout: LogOut,
+  info: Info,
+  copy: Copy,
 }
 
 function TripleDot() {

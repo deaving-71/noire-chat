@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 
 import logger from "@/lib/logger"
 import { useCheckAuthentication } from "@/hooks/auth"
-import { LoadingSpinner } from "@/components/common"
+import { MainLoader } from "@/components/common"
 
 type AuthLayoutProps = React.PropsWithChildren
 
@@ -21,7 +21,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
   }, [isSuccess, data?.isAuthenticated])
 
   if (isLoading) {
-    return <LoadingSpinner />
+    return <MainLoader />
   }
 
   if (error) {

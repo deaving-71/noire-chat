@@ -1,7 +1,7 @@
 import {
-  afterFetch,
   afterFind,
   afterSave,
+  afterUpdate,
   BaseModel,
   beforeCreate,
   beforeSave,
@@ -39,16 +39,9 @@ export default class Notification extends BaseModel {
     notification.privateChats = JSON.stringify(notification.privateChats)
   }
 
-  @afterFetch()
-  static async parseArrays(notifications: Notification[]) {
-    notifications.forEach((notification) => {
-      //@ts-ignore
-      notification.privateChats = JSON.parse(notification.privateChats)
-    })
-  }
-
-  @afterSave()
   @afterFind()
+  @afterUpdate()
+  @afterSave()
   static async parse(notification: Notification) {
     //@ts-ignore
     notification.privateChats = JSON.parse(notification.privateChats)

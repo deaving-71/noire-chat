@@ -5,11 +5,13 @@ import { FriendRequests, FriendsList } from "@/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useQueryClient } from "@tanstack/react-query"
 import { useForm } from "react-hook-form"
+import toast from "react-hot-toast"
 import { z } from "zod"
 
 import { appendOutgoingFriendRequest } from "@/lib/actions/friend_requests"
 import logger from "@/lib/logger"
 import { useSendFriendRequest } from "@/hooks/friend_requests"
+import { useGetFriendsQuery } from "@/hooks/friends"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
@@ -32,21 +34,16 @@ export function AddFriendForm({ setOpen }: AddFriendFormProps) {
     },
   })
   const queryClient = useQueryClient()
+  const { data } = useGetFriendsQuery()
 
   const { mutate: sendFriendRequest, isPending } = useSendFriendRequest({
     onSuccess: (request) => {
-      const baseData = queryClient.getQueryData<{
-        friends: FriendsList
-        friend_requests: FriendRequests
-      }>(["friends"])
+      queryClient.setQueryData(
+        ["friends"],
+        appendOutgoingFriendRequest(data, request)
+      )
 
-      if (baseData) {
-        queryClient.setQueryData(
-          ["friends"],
-          appendOutgoingFriendRequest(baseData, request)
-        )
-      }
-
+      toast.success("Friend request sent")
       setOpen(false)
     },
     onError: (error) => {

@@ -16,8 +16,8 @@ export function InboxContact({ chat, seen }: InboxContactProps) {
   const { data: user } = useGetProfileQuery()
   const { last_message } = chat
 
-  const senderIsCurrentUser = chat.senderId === user.profile.id
-  const receiver = senderIsCurrentUser ? chat.receiver : chat.sender
+  const isCurrentUserSender = chat.senderId === user.profile.id
+  const receiver = isCurrentUserSender ? chat.receiver : chat.sender
 
   return (
     <Link
@@ -59,7 +59,8 @@ export function InboxContact({ chat, seen }: InboxContactProps) {
                 seen ? "text-foreground" : "text-foreground/50"
               )}
             >
-              {senderIsCurrentUser && "You: "} {last_message.content}
+              {last_message.sender.id === user.profile.id && "You: "}{" "}
+              {last_message.content}
             </p>
           </div>
         </div>

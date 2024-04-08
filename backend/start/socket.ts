@@ -14,9 +14,6 @@ ws.boot()
 
 export const io = ws.io
 
-/* 
-! a bug occurs when multiple sockets are connected
-*/
 io.use(registerSocket)
 io.on('connection', onConnection)
 
@@ -78,20 +75,23 @@ async function handleUserStatusChange(socket: Socket, status: boolean, canEmit: 
     const friendsIds = user.friends.map((friend) => friend.id)
     const channels = user.channels.map((channel) => channel.slug)
 
-    const friendsSockets: string[] = []
-    for (let friendId of friendsIds) {
-      const friendSockets = await redis.lrange(String(friendId), 0, -1)
-      friendsSockets.push(...friendSockets)
-    }
-
     socket.join(channels)
 
-    if (canEmit) {
+    if (canEmit && channels.length > 0) {
       user.isOnline = status
       await user.save()
 
-      io.to(friendsSockets).emit(status ? 'friend-connected' : 'friend-disconnected', user)
       io.to(channels).emit('member-update-status', user.id, status)
+    }
+
+    if (canEmit && friendsIds.length > 0) {
+      const friendsSockets: string[] = []
+      for (let friendId of friendsIds) {
+        const friendSockets = await redis.lrange(String(friendId), 0, -1)
+        friendsSockets.push(...friendSockets)
+      }
+
+      io.to(friendsSockets).emit(status ? 'friend-connected' : 'friend-disconnected', user)
     }
   } catch (error) {
     logger.error(error)

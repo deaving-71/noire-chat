@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { FriendRequests, FriendsList, User } from "@/types"
 import { useQueryClient } from "@tanstack/react-query"
+import toast from "react-hot-toast"
 
 import { appendFriend, popFriendRequest } from "@/lib/actions/friend_requests"
 import { errorHandler } from "@/lib/error_handler"
@@ -10,6 +11,8 @@ import {
   useAcceptFriendRequest,
   useDeleteFriendRequest,
 } from "@/hooks/friend_requests"
+import { useGetFriendsQuery } from "@/hooks/friends"
+import { useGetNotificationsQuery } from "@/hooks/notifications"
 
 import { LoadingSpinner } from "../common"
 import { Icons } from "../icons"
@@ -23,44 +26,36 @@ type ContactUserProps = {
 
 export function FriendRequest({ type, user, requestId }: ContactUserProps) {
   const queryClient = useQueryClient()
+  const { data } = useGetFriendsQuery()
+  const notifications = useGetNotificationsQuery()
 
-  const { mutate: acceptFriendRequest, isPending: isAcceptancePending } =
-    useAcceptFriendRequest({
-      onSuccess: (newFriend) => {
-        const baseData = queryClient.getQueryData<{
-          friends: FriendsList
-          friend_requests: FriendRequests
-        }>(["friends"])
+  const acceptFriendRequest = useAcceptFriendRequest({
+    onSuccess: async (newFriend) => {
+      queryClient.setQueryData<typeof data>(["friends"], () => {
+        const updatedFriendsData = popFriendRequest(data, requestId)
+        return appendFriend(updatedFriendsData, newFriend)
+      })
+      await notifications.refetch()
+      toast.success("Friend request accepted")
+    },
+    onError: (error) => {
+      errorHandler(error)
+    },
+  })
 
-        if (baseData)
-          queryClient.setQueryData(["friends"], () => {
-            const updatedData = popFriendRequest(baseData, requestId)
-            return appendFriend(updatedData, newFriend)
-          })
-      },
-      onError: (error) => {
-        errorHandler(error)
-      },
-    })
-
-  const { mutate: removeFriendRequest, isPending: isRemovalPending } =
-    useDeleteFriendRequest({
-      onSuccess: () => {
-        const baseData = queryClient.getQueryData<{
-          friends: FriendsList
-          friend_requests: FriendRequests
-        }>(["friends"])
-
-        if (baseData)
-          queryClient.setQueryData(
-            ["friends"],
-            popFriendRequest(baseData, requestId)
-          )
-      },
-      onError: (error) => {
-        errorHandler(error)
-      },
-    })
+  const removeFriendRequest = useDeleteFriendRequest({
+    onSuccess: async () => {
+      queryClient.setQueryData<typeof data>(
+        ["friends"],
+        popFriendRequest(data, requestId)
+      )
+      await notifications.refetch()
+      toast.success("Friend request rejected")
+    },
+    onError: (error) => {
+      errorHandler(error)
+    },
+  })
 
   return (
     <div className="group p-3 hover:bg-secondary/40">
@@ -93,10 +88,12 @@ export function FriendRequest({ type, user, requestId }: ContactUserProps) {
               className="size-9 rounded-full"
               variant="secondary"
               size="icon"
-              onClick={() => acceptFriendRequest(user.id)}
-              disabled={isAcceptancePending && isRemovalPending}
+              onClick={() => acceptFriendRequest.mutate(user.id)}
+              disabled={
+                acceptFriendRequest.isPending && removeFriendRequest.isPending
+              }
             >
-              {isAcceptancePending ? (
+              {acceptFriendRequest.isPending ? (
                 <LoadingSpinner />
               ) : (
                 <Icons.checkmark size={18} />
@@ -108,14 +105,20 @@ export function FriendRequest({ type, user, requestId }: ContactUserProps) {
             variant="secondary"
             size="icon"
             onClick={() =>
-              removeFriendRequest({
+              removeFriendRequest.mutate({
                 userId: user.id,
                 isSender: type === "outgoing",
               })
             }
-            disabled={isAcceptancePending && isRemovalPending}
+            disabled={
+              acceptFriendRequest.isPending && removeFriendRequest.isPending
+            }
           >
-            {isRemovalPending ? <LoadingSpinner /> : <Icons.xmark />}
+            {removeFriendRequest.isPending ? (
+              <LoadingSpinner />
+            ) : (
+              <Icons.xmark />
+            )}
           </Button>
         </div>
       </div>

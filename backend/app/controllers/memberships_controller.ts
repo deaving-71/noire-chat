@@ -13,13 +13,29 @@ export default class MembershipsController {
     const channel = await Channel.query().where({ slug }).first()
 
     if (!channel) {
-      return response.notFound({ message: 'Channel does not exist' })
+      return response.badRequest({
+        errors: [
+          {
+            message: 'Channel does not exist',
+            field: 'slug',
+            rule: 'invalid',
+          },
+        ],
+      })
     }
 
     const isMember = await user.related('channels').query().where({ id: channel.id }).first()
 
     if (isMember) {
-      return response.badRequest({ message: 'You are already a member of this channel' })
+      return response.badRequest({
+        errors: [
+          {
+            message: 'You are already a member of this channel',
+            field: 'slug',
+            rule: 'bad request',
+          },
+        ],
+      })
     }
 
     await user.related('channels').attach([channel.id])

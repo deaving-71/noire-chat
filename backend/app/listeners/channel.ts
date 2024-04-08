@@ -37,6 +37,7 @@ export default function channelHandlers(io: Server, socket: Socket) {
       const senderId = socket.data.user.id
 
       const channel = await Channel.findBy('slug', slug)
+
       if (!channel) {
         socket.emit('error', 'Channel does not exist')
         return
@@ -44,8 +45,8 @@ export default function channelHandlers(io: Server, socket: Socket) {
 
       const _message = await channel.related('messages').create({ content, senderId })
       const _sender = await _message.related('sender').query().first()
-      const message = _message.serialize()
-      const sender = _sender?.serialize()
+      const message = _message.toJSON()
+      const sender = _sender?.toJSON()
 
       io.to(slug).emit('channel:message-received', { ...message, sender })
     } catch (err) {

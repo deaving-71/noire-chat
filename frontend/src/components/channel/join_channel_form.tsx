@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,9 +25,10 @@ import {
 import { Input } from "@/components/ui/input"
 
 import { LoadingSpinner } from "../common"
+import { Icons } from "../icons"
 
 const formSchema = z.object({
-  slug: z.string().min(8, "Invalid channel code"),
+  slug: z.string().min(8, "Invalid Channel ID"),
 })
 
 export type ChannelFormAction = {
@@ -77,10 +79,19 @@ export function JoinChannelForm({ setOpen }: ChannelFormAction) {
           name="slug"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Channel code</FormLabel>
+              <FormLabel>Channel ID</FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>
+              <FormDescription>
+                <Icons.info
+                  className="inline align-middle text-primary"
+                  size={16}
+                />
+                &nbsp; Please enter the Channel ID that is my of 8 characters
+                &nbsp;
+                <u>ex</u>: e0e0754b
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

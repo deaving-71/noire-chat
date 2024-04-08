@@ -15,8 +15,8 @@ type BaseData = {
 export function appendFriend(baseData: BaseData, newFriend: User) {
   return produce(baseData, (draft) => {
     newFriend.isOnline
-      ? (draft.friends.online = [...draft.friends.online, newFriend])
-      : [...draft.friends.offline, newFriend]
+      ? draft.friends.online.push(newFriend)
+      : draft.friends.offline.push(newFriend)
   })
 }
 
@@ -25,10 +25,7 @@ export function appendOutgoingFriendRequest(
   request: OutgoingFriendRequest
 ) {
   return produce(baseData, (draft) => {
-    draft.friend_requests.outgoing = [
-      ...draft.friend_requests.outgoing,
-      request,
-    ]
+    draft.friend_requests.outgoing.push(request)
   })
 }
 export function appendIncomingFriendRequest(
@@ -36,10 +33,7 @@ export function appendIncomingFriendRequest(
   request: IncomingFriendRequest
 ) {
   return produce(baseData, (draft) => {
-    draft.friend_requests.incoming = [
-      ...draft.friend_requests.incoming,
-      request,
-    ]
+    draft.friend_requests.incoming.push(request)
   })
 }
 

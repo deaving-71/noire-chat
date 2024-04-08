@@ -10,15 +10,8 @@ import { randomBytes } from 'crypto'
 import { DateTime } from 'luxon'
 
 export default class ChannelsController {
-  async store({ auth, request, response }: HttpContext) {
-    const user = auth.user
-
-    if (!user) {
-      return response.abort({
-        message: 'You must be logged in to perform this action',
-        status: 401,
-      })
-    }
+  async store({ auth, request }: HttpContext) {
+    const user = auth.user!
 
     const { name } = await request.validateUsing(channelCreationValidator)
     const userId = user.id

@@ -13,7 +13,8 @@ import { Header, Section } from "../chat_app"
 import { InboxContact } from "./inbox_contact"
 
 export function Inbox() {
-  const { data: chats } = useGetAllPrivateChats()
+  const { data: chats, refetch: refetchAllPrivateChats } =
+    useGetAllPrivateChats()
   const { data: notifications } = useGetNotificationsQuery()
   const queryClient = useQueryClient()
   const { ws } = useSocket()
@@ -70,6 +71,10 @@ export function Inbox() {
       ws?.socket.off("friend-disconnected")
     }
   }, [])
+
+  useEffect(() => {
+    refetchAllPrivateChats()
+  }, [notifications.privateChats])
 
   return (
     <Section className="sticky right-0 top-0 grid h-dvh">

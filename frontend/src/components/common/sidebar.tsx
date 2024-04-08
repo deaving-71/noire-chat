@@ -6,9 +6,12 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useSocket } from "@/context/socket"
 import { useQueryClient } from "@tanstack/react-query"
+import { produce } from "immer"
+import { z } from "zod"
 
 import logger from "@/lib/logger"
 import { cn } from "@/lib/utils"
+import { profileValidator } from "@/lib/validators/user"
 import { useSignOut } from "@/hooks/auth"
 import { useGetProfileQuery } from "@/hooks/profile"
 

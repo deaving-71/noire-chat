@@ -45,7 +45,7 @@ export function useDeleteFriendRequest(
   return useMutation({
     mutationKey: ["friend_request", "delete"],
     mutationFn: async ({ userId, isSender }) => {
-      return await fetcher(`/friend-requests/${userId}`, {
+      await fetcher(`/friend-requests/${userId}`, {
         method: "DELETE",
         body: { isSender },
       })

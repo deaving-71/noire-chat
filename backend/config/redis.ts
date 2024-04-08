@@ -25,6 +25,9 @@ const redisConfig = defineConfig({
       retryStrategy(times) {
         return times > 10 ? null : times * 50
       },
+      tls: {
+        host: env.get('REDIS_HOST'),
+      },
     },
   },
 })

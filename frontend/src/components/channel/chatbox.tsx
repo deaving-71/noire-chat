@@ -15,6 +15,7 @@ import { useGetProfileQuery } from "@/hooks/profile"
 import { ChatInput, ChatMessage, Header, Section } from "../chat_app"
 import { Icons } from "../icons"
 import { ChatSkeleton } from "../skeletons"
+import { ChannelInfo } from "./channel_info"
 
 export type ChatboxProps = {
   slug: string
@@ -74,9 +75,9 @@ export function Chatbox({ slug }: ChatboxProps) {
           draft.messages.push(message)
         })
       )
-
-      refetchProfile()
     })
+
+    refetchProfile()
 
     return () => {
       ws?.socket.off("channel:message-received")
@@ -97,14 +98,17 @@ export function Chatbox({ slug }: ChatboxProps) {
 
   if (error || !data) return
 
-  const { channel, messages } = data!
+  const { channel, messages, members } = data!
 
   return (
     <Section className="grid h-dvh grid-rows-[1fr,52px]">
       <ScrollToBottom className="overflow-auto pb-4">
-        <Header>
-          <Icons.hashtag size={18} />
-          <h1 className="text-lg font-bold lg:text-xl">{channel.name}</h1>
+        <Header className="justify-between">
+          <div className="flex items-center gap-[1ch]">
+            <Icons.hashtag size={18} />
+            <h1 className="text-lg font-bold lg:text-xl">{channel.name}</h1>
+          </div>
+          <ChannelInfo channel={channel} membersCount={members.length} />
         </Header>
         {messages.map((message) => (
           <ChatMessage key={message.id} {...message} />

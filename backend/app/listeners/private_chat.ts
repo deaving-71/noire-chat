@@ -22,14 +22,16 @@ export default function privateChatHandlers(io: Server, socket: Socket) {
       const sockets = [...receiverSockets, ...senderSockets]
 
       if (notifications) {
-        const notificationsJSON = notifications.serialize()
-        if (!notificationsJSON.privateChats.includes(message.privateChatId)) {
-          notifications.privateChats = [...notificationsJSON.privateChats, message.privateChatId]
-          await notifications.save()
+        if (!notifications.privateChats.includes(message.privateChatId)) {
+          notifications.privateChats.push(message.privateChatId)
+          const newNotifications = await notifications.save()
 
-          const { privateChats, friendRequestsCount } = notifications
+          if (receiverSockets.length < 0) return
+
+          const { privateChats, friendRequestsCount } = newNotifications
+
           io.to(receiverSockets).emit('notification', {
-            privateChats: JSON.parse(privateChats),
+            privateChats,
             friendRequestsCount,
           })
         }

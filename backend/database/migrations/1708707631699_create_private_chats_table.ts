@@ -10,7 +10,6 @@ export default class extends BaseSchema {
       table.integer('receiver_id').unsigned().notNullable()
       table.foreign('sender_id').references('users.id').onDelete('CASCADE')
       table.foreign('receiver_id').references('users.id').onDelete('CASCADE')
-      table.boolean('is_viewed').defaultTo(false)
 
       table.timestamp('created_at', { useTz: true })
     })

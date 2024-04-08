@@ -51,21 +51,21 @@ export default class FriendRequestsController {
     }
 
     notifications.friendRequestsCount = notifications?.friendRequestsCount + 1
-    await notifications.save()
+    const newNotifications = await notifications.save()
 
     const sockets = await redis.lrange(String(receiver.id), 0, -1)
     io.to(sockets).emit('friend-request:received', {
-      ...friendRequest.serialize(),
-      sender: user.serialize(),
+      ...friendRequest.toJSON(),
+      sender: user.toJSON(),
     })
 
-    const { friendRequestsCount, privateChats } = notifications
+    const { friendRequestsCount, privateChats } = newNotifications
     io.to(sockets).emit('notification', {
       friendRequestsCount,
-      privateChats: JSON.parse(privateChats),
+      privateChats,
     })
 
-    return { ...friendRequest.serialize(), receiver }
+    return { ...friendRequest.toJSON(), receiver }
   }
 
   async destroy({ auth, request, response }: HttpContext) {
@@ -85,16 +85,16 @@ export default class FriendRequestsController {
     }
 
     notifications.friendRequestsCount = notifications?.friendRequestsCount - 1
-    await notifications.save()
+    const newNotifications = await notifications.save()
     const sockets = await redis.lrange(String(userOneId), 0, -1)
 
     io.to(sockets).emit('friend-request:removed', friendRequest?.id)
 
     if (isSender) {
-      const { friendRequestsCount, privateChats } = notifications
+      const { friendRequestsCount, privateChats } = newNotifications
       io.to(sockets).emit('notification', {
         friendRequestsCount,
-        privateChats: JSON.parse(privateChats),
+        privateChats,
       })
     }
   }
