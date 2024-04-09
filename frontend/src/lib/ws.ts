@@ -6,7 +6,7 @@ export class Ws {
   constructor() {
     //! use env url from t3-oss
     // @ts-ignore
-    this.socket = io("http://127.0.0.1:3333", {
+    this.socket = io("https://noire-chat.onrender.com", {
       withCredentials: true,
       autoConnect: false,
     })
