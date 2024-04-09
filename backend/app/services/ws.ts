@@ -16,16 +16,16 @@ class Ws {
 
     this.io = new Server(AdonisServer.getNodeServer(), {
       cors: {
-        origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+        origin: ['https://noire-chat.vercel.app'],
         methods: ['GET', 'POST'],
         credentials: true,
       },
       cookie: {
-        name: "io",
-        path: "/",
+        name: 'io',
+        path: '/',
         httpOnly: true,
         secure: true,
-        sameSite: "none"
+        sameSite: 'none',
       },
     })
     this.booted = true
