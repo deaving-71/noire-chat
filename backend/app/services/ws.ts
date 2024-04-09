@@ -20,7 +20,13 @@ class Ws {
         methods: ['GET', 'POST'],
         credentials: true,
       },
-      cookie: true,
+      cookie: {
+        name: "io",
+        path: "/",
+        httpOnly: true,
+        secure: true,
+        sameSite: "none"
+      },
     })
     this.booted = true
   }
