@@ -51,8 +51,8 @@ export default function LoginPage() {
       errorHandler(error, (parsedError) => {
         parsedError.errors.forEach((err) => {
           const { field, message } = err
-          // @ts-ignore
-          form.setError(field, { message })
+          form.setError(`root.${field}`, { message })
+          if (field === "root") form.setError("root", { message })
         })
       })
     },

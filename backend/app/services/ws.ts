@@ -1,5 +1,6 @@
 import { Server } from 'socket.io'
 import AdonisServer from '@adonisjs/core/services/server'
+import { ALLOWED_ORIGINS } from '#config/cors'
 
 class Ws {
   //@ts-ignore
@@ -16,7 +17,7 @@ class Ws {
 
     this.io = new Server(AdonisServer.getNodeServer(), {
       cors: {
-        origin: ['https://noire-chat.vercel.app'],
+        origin: ALLOWED_ORIGINS,
         methods: ['GET', 'POST'],
         credentials: true,
       },

@@ -1,7 +1,7 @@
 import { HttpContext } from '@adonisjs/core/http'
 import { loginValidator } from '#validators/auth'
 import User from '#models/user'
-import { stringify } from 'node:querystring'
+import * as querystring from 'node:querystring'
 
 export default class LoginController {
   async store({ request, response, auth }: HttpContext) {
@@ -12,8 +12,10 @@ export default class LoginController {
 
     await auth.use('web').login(user, remember)
 
-    response.plainCookie('noirechat-userdata', stringify(user.serialize()), {
+    response.plainCookie('noirechat-userdata', querystring.stringify(user.serialize()), {
       httpOnly: true,
+      secure: true,
+      sameSite: 'none',
       encode: false,
       maxAge: 1000 * 60 * 60 * 24 * 30,
     })

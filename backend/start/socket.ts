@@ -3,7 +3,7 @@ import { Socket } from 'socket.io'
 import cookie from 'cookie'
 import redis from '@adonisjs/redis/services/main'
 import logger from '@adonisjs/core/services/logger'
-import * as json from 'node:querystring'
+import * as querystring from 'node:querystring'
 import { userValidator } from '#validators/user'
 import privateChatHandlers from '#listeners/private_chat'
 import User from '#models/user'
@@ -38,8 +38,8 @@ async function registerSocket(socket: Socket, next: NextMiddleware) {
 
     next()
   } catch (error) {
-    next(error)
     logger.error(error)
+    next(error)
   }
 }
 
@@ -100,6 +100,7 @@ async function handleUserStatusChange(socket: Socket, status: boolean, canEmit: 
 
 async function getUser(socket: Socket) {
   const cookies = socket.handshake.headers.cookie
+
   if (!cookies) {
     throw new Error('Action unauthorized')
   }
@@ -113,5 +114,5 @@ async function getUser(socket: Socket) {
     throw new Error('Action unauthorized')
   }
 
-  return await userValidator.validate(json.parse(userDataAsString))
+  return await userValidator.validate(querystring.parse(userDataAsString))
 }

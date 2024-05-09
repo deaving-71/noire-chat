@@ -1,12 +1,12 @@
 import { io } from "socket.io-client"
 
+import { env } from "@/env.mjs"
+
 export class Ws {
   socket: ReturnType<typeof io>
 
   constructor() {
-    //! use env url from t3-oss
-    // @ts-ignore
-    this.socket = io("https://noire-chat.onrender.com", {
+    this.socket = io(env.NEXT_PUBLIC_SOCKET_URL, {
       withCredentials: true,
       autoConnect: false,
     })
@@ -16,6 +16,9 @@ export class Ws {
     this.socket.connect()
     this.socket.on("connect", () => {
       cb && cb()
+    })
+    this.socket.on("connect_error", (err) => {
+      console.error(`connect_error due to ${err.message}`)
     })
   }
 

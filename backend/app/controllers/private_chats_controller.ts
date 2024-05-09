@@ -1,5 +1,4 @@
 import PrivateChat from '#models/private_chat'
-import PrivateChatMessage from '#models/private_chat_message'
 import User from '#models/user'
 import { receiverIdValidator } from '#validators/user'
 import type { HttpContext } from '@adonisjs/core/http'
@@ -19,14 +18,12 @@ export default class PrivateChatsController {
         messagesQuery.preload('sender').orderBy('id', 'desc')
       })
 
-    //@ts-ignore
-    const privateChats: (Omit<PrivateChat, 'messages'> & { last_message: PrivateChatMessage })[] =
-      _privateChats?.map((chat) => {
-        const { messages, ...rest } = chat.toJSON()
+    const privateChats = _privateChats?.map((chat) => {
+      const { messages, ...rest } = chat.toJSON()
 
-        const last_message = messages.at(0)
-        return { ...rest, last_message }
-      })
+      const last_message = messages.at(0)
+      return { ...rest, last_message }
+    })
 
     privateChats.sort(
       (a, b) => b.last_message.createdAt.toSeconds() - a.last_message.createdAt.toSeconds()

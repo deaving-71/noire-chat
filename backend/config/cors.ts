@@ -1,3 +1,4 @@
+import env from '#start/env'
 import { defineConfig } from '@adonisjs/cors'
 
 /**
@@ -6,9 +7,12 @@ import { defineConfig } from '@adonisjs/cors'
  *
  * https://docs.adonisjs.com/guides/security/cors
  */
+
+export const ALLOWED_ORIGINS = env.get('ALLOWED_ORIGINS').split(',')
+
 const corsConfig = defineConfig({
   enabled: true,
-  origin: ['https://noire-chat.vercel.app'],
+  origin: ALLOWED_ORIGINS,
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
   headers: true,
   exposeHeaders: [],
