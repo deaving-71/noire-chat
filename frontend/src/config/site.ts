@@ -6,7 +6,7 @@ export const siteConfig: SiteConfig = {
   name: "Noire Chat",
   author: "deaving-71",
   description:
-    "Noire Chat is a chat app that is similar to discord, built with Next.js 14 and Adonis.js V6.",
+    "Noire Chat is a real time chat app similar to discord where you can add friends and create channels to chat with others.",
   keywords: [
     "Next.js",
     "React",
@@ -24,3 +24,5 @@ export const siteConfig: SiteConfig = {
   },
   ogImage: `${env.NEXT_PUBLIC_APP_URL}/og.jpg`,
 }
+
+export const sourceCodeLink = siteConfig.links.github + "/noire-chat"
