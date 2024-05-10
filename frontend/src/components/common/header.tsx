@@ -3,8 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { sourceCodeLink } from "@/config/site"
+import { cn } from "@/lib/utils"
 import { useCheckAuthentication } from "@/hooks/auth"
 
+import { Icons } from "../icons"
 import { Button } from "../ui/button"
 
 const navItems = [
@@ -13,12 +16,9 @@ const navItems = [
     path: "/",
   },
   {
-    name: "About",
-    path: "/about",
-  },
-  {
     name: "Github",
-    path: "#",
+    path: sourceCodeLink,
+    external: true,
   },
 ]
 
@@ -33,10 +33,18 @@ export function Header() {
             <li key={item.path}>
               <Link
                 href={item.path}
-                className="px-2 text-muted-foreground transition-all hover:text-foreground aria-[current=true]:text-foreground"
+                className={cn(
+                  "relative px-2 text-muted-foreground transition-all hover:text-foreground aria-[current=true]:text-foreground",
+                  item.external && "mr-2"
+                )}
                 aria-current={item.path === pathname}
               >
                 {item.name}
+                {item.external && (
+                  <span className="absolute -right-2 -top-1">
+                    <Icons.ExternalLink className="size-3" />
+                  </span>
+                )}
               </Link>
             </li>
           ))}
