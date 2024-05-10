@@ -1,4 +1,5 @@
 import {
+  ArrowRight,
   Check,
   Command,
   Copy,
@@ -8,6 +9,7 @@ import {
   Info,
   Loader2,
   LogOut,
+  LucideArrowUpRightFromSquare,
   MessageSquare,
   Moon,
   Plus,
@@ -43,6 +45,8 @@ const icons = {
   logout: LogOut,
   info: Info,
   copy: Copy,
+  ExternalLink: LucideArrowUpRightFromSquare,
+  ArrowRight,
 }
 
 function TripleDot() {
