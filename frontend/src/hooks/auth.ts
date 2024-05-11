@@ -1,15 +1,8 @@
-import { useEffect } from "react"
-import { useRouter } from "next/navigation"
-import {
-  MutationOptions,
-  useMutation,
-  useQuery,
-  useSuspenseQuery,
-} from "@tanstack/react-query"
+import { MutationOptions, useMutation, useQuery } from "@tanstack/react-query"
 import { z } from "zod"
 
-import { env } from "@/env.mjs"
 import { fetcher } from "@/lib/fetcher"
+import { formSchema as signupFormSchema } from "@/app/auth/sign-up/page"
 
 type Credentials = {
   email: string
@@ -21,10 +14,25 @@ const authCheckSchema = z.object({
   isAuthenticated: z.boolean(),
 })
 
+export function useSignUp(
+  opts?: MutationOptions<void, Error, z.infer<typeof signupFormSchema>>
+) {
+  return useMutation({
+    mutationKey: ["auth", "sign_up"],
+    mutationFn: async (values) => {
+      await fetcher("/auth/register", {
+        method: "POST",
+        body: values,
+      })
+    },
+    ...opts,
+  })
+}
+
 export function useSignIn(opts?: MutationOptions<void, Error, Credentials>) {
   return useMutation({
     mutationKey: ["auth", "sign_in"],
-    mutationFn: async (credentials: Credentials) => {
+    mutationFn: async (credentials) => {
       await fetcher("/auth/login", {
         method: "POST",
         body: credentials,
