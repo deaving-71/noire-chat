@@ -8,7 +8,6 @@ import toast from "react-hot-toast"
 import { z } from "zod"
 
 import { errorHandler } from "@/lib/error_handler"
-import logger from "@/lib/logger"
 import { useSignIn } from "@/hooks/auth"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -34,8 +33,8 @@ export default function LoginPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "deaving@gmail.com",
-      password: "12345678",
+      email: "",
+      password: "",
       remember: false,
     },
   })
